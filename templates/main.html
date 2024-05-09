@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+{% load static %}
+{% load static tailwind_tags %}
+<html lang="en">
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Iterio</title>
+
+    {% tailwind_css %}
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body class="h-screen border-black border-4">
+    {% include 'navbar.html' %}
+
+    {% block content %}
+
+    {% endblock %}
+</body>
+</html>
