@@ -1,1 +1,69 @@
 {% extends 'main.html' %}
+
+{% load static %}
+{% load static tailwind_tags %}
+{% tailwind_css %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Hero Section -->
+    <section class="bg-gray-900 text-white py-16 mb-16">
+        <div class="text-center">
+            <h1 class="text-4xl font-bold mb-4">Welcome to Iterio</h1>
+            <p class="text-lg">Your one-stop destination for trusted service providers</p>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section class="mb-16">
+        <div class="text-center mb-8">
+            <h2 class="text-3xl font-bold">Our Services</h2>
+            <p class="text-gray-600">Discover the wide range of services we offer</p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Service Card 1 -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <img src="{% static 'images/home-services.png' %}" alt="Service 1" class="w-full h-40 object-cover rounded-lg mb-4">
+                <h3 class="text-xl font-bold mb-2">Home Services</h3>
+                <p class="text-gray-600">Plumbing • Electrical Work • Painting • Carpentry • Interior Design...</p>
+            </div>
+            <!-- Service Card 2 -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <img src="{% static 'images/automotive-services.png' %}" alt="Service 2" class="w-full h-40 object-cover rounded-lg mb-4">
+                <h3 class="text-xl font-bold mb-2">Automotive Services</h3>
+                <p class="text-gray-600">Car Mechanics • Auto Body Repair • Car Detailing • Tire Services...</p>
+            </div>
+            <!-- Service Card 3 -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <img src="{% static 'images/health-wellness.png' %}" alt="Service 3" class="w-full h-40 object-cover rounded-lg mb-4">
+                <h3 class="text-xl font-bold mb-2">Health & Wellness Services</h3>
+                <p class="text-gray-600">Massage Therapy • Personal Training • Yoga/Pilates • Nutrition • Mental Health...</p>
+            </div>
+            <!-- Add more service cards as needed -->
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="mb-16">
+        <div class="text-center mb-8">
+            <h2 class="text-3xl font-bold">Testimonials</h2>
+            <p class="text-gray-600">See what our clients say about us</p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Testimonial Card 1 -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <p class="italic text-gray-600 mb-4">"Lorem ipsum dolor sit amet, consectetur adipiscing elit."</p>
+                <p class="font-bold">John Doe</p>
+                <p class="text-sm text-gray-500">CEO, Example Company</p>
+            </div>
+            <!-- Testimonial Card 2 -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <p class="italic text-gray-600 mb-4">"Lorem ipsum dolor sit amet, consectetur adipiscing elit."</p>
+                <p class="font-bold">Jane Smith</p>
+                <p class="text-sm text-gray-500">CTO, Another Company</p>
+            </div>
+            <!-- Add more testimonial cards as needed -->
+        </div>
+    </section>
+</div>
+{% endblock %}
