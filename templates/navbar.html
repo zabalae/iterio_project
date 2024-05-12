@@ -20,8 +20,12 @@
                 </li>
                 {% if user.is_authenticated %}
                 <li>
+                    <a href="{% url 'home' %}" class="text-white hover:text-gray-300">Profile</a>
+                </li>
+                <li>
                     <a href="{% url 'logout' %}" class="text-white hover:text-gray-300">Logout</a>
                 </li>
+                <li>
                 {% else %}
                 <li>
                     <a href="{% url 'login' %}" class="text-white hover:text-gray-300">Login</a>
