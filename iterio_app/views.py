@@ -36,15 +36,14 @@ def logoutUser(request):
     messages.success(request, 'You have been logged out.')
     return redirect('home')
 
+
 def registerUser(request):
-    form = SignUpForm()
     if request.method == 'POST':
         form = SignUpForm(request.POST)
         if form.is_valid():
             form.save()
-            username = form.cleaned_data.get['username']
+            username = form.cleaned_data['username']
             password = form.cleaned_data['password1']
-
             user = authenticate(username=username, password=password)
             login(request, user)
             messages.success(request, ("Username Created - Please Fill Out Your User Info Below..."))
@@ -53,4 +52,6 @@ def registerUser(request):
             messages.success(request, ("Please try again..."))
             return redirect('register')
     else:
-        return render(request, 'iterio_app/register.html', {"form": form})
+        form = SignUpForm()
+    context = {'form': form}
+    return render(request, 'iterio_app/register.html', context)
