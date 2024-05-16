@@ -1,0 +1,15 @@
+{% extends 'main.html' %}
+
+{% load static %}
+{% load static tailwind_tags %}
+{% tailwind_css %}
+
+{% block content %}
+
+<p>Name: {{ user.first_name }} {{user.last_name}} </p>
+<p>Username: {{ user.username}}</p>
+<p>Email: {{ user.email }}</p>
+
+
+
+{% endblock %}
