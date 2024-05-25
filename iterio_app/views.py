@@ -64,15 +64,27 @@ def profile(request):
 def update_user(request):
     if request.user.is_authenticated:
         current_user = User.objects.get(id=request.user.id)
-        user_form = UpdateUserForm(request.POST or None, instance=current_user)
+        current_profile = Profile.objects.get(user=current_user)
 
-        if user_form.is_valid():
-            user_form.save()
+        if request.method == 'POST':
+            user_form = UpdateUserForm(request.POST, instance=current_user)
+            user_info_form = UserInfoForm(request.POST, instance=current_profile)
 
-            login(request, current_user)
+            if user_form.is_valid() and user_info_form.is_valid():
+                user_form.save()
+                user_info_form.save()
 
-            return redirect('home')
-        return render(request, 'iterio_app/update_user.html', {'user_form': user_form})
+                login(request, current_user)
+                return redirect('home')
+        else:
+            user_form = UpdateUserForm(instance=current_user)
+            user_info_form = UserInfoForm(instance=current_profile)
+
+        context = {
+            'user_form': user_form,
+            'user_info_form': user_info_form,
+        }
+        return render(request, 'iterio_app/update_user.html', context)
 
     else:
         return redirect('home')
@@ -93,17 +105,3 @@ def update_password(request):
         else:
             form = ChangePasswordForm(current_user)
             return render(request, 'iterio_app/update_password.html', {'form':form})
-
-def update_info(request):
-    if request.user.is_authenticated:
-        current_user = Profile.objects.get(user__id=request.user.id)
-        update_user_form = UserInfoForm(request.POST or None, instance=current_user)
-
-        if update_user_form.is_valid():
-            update_user_form.save()
-
-            return redirect('home')
-        return render(request, 'iterio_app/update_user.html', {'update_user_form': update_user_form})
-
-    else:
-        return redirect('home')
