@@ -3,8 +3,9 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
-from .forms import SignUpForm, UpdateUserForm, ChangePasswordForm
+from .forms import SignUpForm, UpdateUserForm, ChangePasswordForm, UserInfoForm
 from django import forms
+from .models import Profile
 
 
 # Create your views here.
@@ -57,7 +58,8 @@ def registerUser(request):
     return render(request, 'iterio_app/register.html', context)
 
 def profile(request):
-    return render(request, 'iterio_app/profile.html')
+    profile = Profile.objects.get(user=request.user)
+    return render(request, 'iterio_app/profile.html', {'profile': profile})
 
 def update_user(request):
     if request.user.is_authenticated:
@@ -91,3 +93,17 @@ def update_password(request):
         else:
             form = ChangePasswordForm(current_user)
             return render(request, 'iterio_app/update_password.html', {'form':form})
+
+def update_info(request):
+    if request.user.is_authenticated:
+        current_user = Profile.objects.get(user__id=request.user.id)
+        update_user_form = UserInfoForm(request.POST or None, instance=current_user)
+
+        if update_user_form.is_valid():
+            update_user_form.save()
+
+            return redirect('home')
+        return render(request, 'iterio_app/update_user.html', {'update_user_form': update_user_form})
+
+    else:
+        return redirect('home')
