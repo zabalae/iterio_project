@@ -32,6 +32,17 @@
             <div>
                 <p class="text-lg font-semibold text-gray-700">Country: <span class="text-gray-900">{{ profile.country }}</span></p>
             </div>
+            <div>
+                <p class="text-lg font-semibold text-gray-700">User Type:
+                    <span class="text-gray-900">
+                        {% if profile.user_type == 'provider' %}
+                            Service Provider
+                        {% else %}
+                            Regular User
+                        {% endif %}
+                    </span>
+                </p>
+            </div>
 
         </div>
 

@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from .forms import SignUpForm, UpdateUserForm, ChangePasswordForm, UserInfoForm
 from django import forms
-from .models import Profile
+from .models import Profile, ServiceProvider
 
 
 # Create your views here.
@@ -73,6 +73,13 @@ def update_user(request):
             if user_form.is_valid() and user_info_form.is_valid():
                 user_form.save()
                 user_info_form.save()
+
+                # Check if user type has changed
+                user_type = user_info_form.cleaned_data['user_type']
+                if user_type == 'provider' and not ServiceProvider.objects.filter(user=current_user).exists():
+                    ServiceProvider.objects.create(user=current_user)
+                elif user_type == 'regular' and ServiceProvider.objects.filter(user=current_user).exists():
+                    ServiceProvider.objects.filter(user=current_user).delete()
 
                 login(request, current_user)
                 return redirect('home')

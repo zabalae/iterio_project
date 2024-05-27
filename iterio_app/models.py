@@ -6,6 +6,10 @@ from django.db.models.signals import post_save
 
 #Profile
 class Profile(models.Model):
+    USER_CHOICES = [
+        ('regular', 'Regular User'),
+        ('provider', 'Service Provider'),
+    ]
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     date_modified = models.DateTimeField(User, auto_now=True)
     phone = models.CharField(max_length=20, blank=True)
@@ -14,6 +18,7 @@ class Profile(models.Model):
     city = models.CharField(max_length=200, blank=True)
     zipcode = models.CharField(max_length=200, blank=True)
     country = models.CharField(max_length=200, blank=True)
+    user_type = models.CharField(max_length=20, choices=USER_CHOICES, default='regular')
 
     def __str__(self):
         return self.user.username
