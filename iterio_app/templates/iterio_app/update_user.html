@@ -5,7 +5,7 @@
     <!-- Update User -->
     <div class="max-w-md w-full bg-white p-8 rounded-lg shadow-lg">
         <h1 class="text-3xl font-bold text-gray-900 mb-6 text-center">Update Profile</h1>
-        <form method="POST" action="{% url 'update_user' %}" >
+        <form method="POST" action="{% url 'update_user' %}" enctype="multipart/form-data" >
             {% csrf_token %}
             {{ user_form.as_p }}
             {{ user_info_form.as_p }}

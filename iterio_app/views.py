@@ -48,7 +48,7 @@ def registerUser(request):
             user = authenticate(username=username, password=password)
             login(request, user)
             messages.success(request, ("Username Created - Please Fill Out Your User Info Below..."))
-            return redirect('home')
+            return redirect('update_user')
         else:
             messages.success(request, ("Please try again..."))
             return redirect('register')
@@ -59,7 +59,7 @@ def registerUser(request):
 
 def profile(request):
     profile = Profile.objects.get(user=request.user)
-    return render(request, 'iterio_app/profile.html', {'profile': profile})
+    return render(request, 'iterio_app/profile.html', {'profile': profile, 'user': request.user})
 
 def update_user(request):
     if request.user.is_authenticated:
@@ -68,7 +68,7 @@ def update_user(request):
 
         if request.method == 'POST':
             user_form = UpdateUserForm(request.POST, instance=current_user)
-            user_info_form = UserInfoForm(request.POST, instance=current_profile)
+            user_info_form = UserInfoForm(request.POST, request.FILES, instance=current_profile)
 
             if user_form.is_valid() and user_info_form.is_valid():
                 user_form.save()
