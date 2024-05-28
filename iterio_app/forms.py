@@ -12,11 +12,12 @@ class UserInfoForm(forms.ModelForm):
     zipcode = forms.CharField(label="", widget=forms.TextInput(attrs={'class':'form-control', 'placeholder':'Zipcode'}), required=False)
     country = forms.CharField(label="", widget=forms.TextInput(attrs={'class':'form-control', 'placeholder':'Country'}), required=False)
     user_type = forms.ChoiceField(choices=Profile.USER_CHOICES, required=True)
+    profile_picture = forms.ImageField(label="Profile Picture", required=False)
 
 
     class Meta:
         model = Profile
-        fields = ('phone', 'address1', 'address2', 'city', 'zipcode', 'country', 'user_type')
+        fields = ('phone', 'address1', 'address2', 'city', 'zipcode', 'country', 'user_type', 'profile_picture')
 
 
 

@@ -19,6 +19,7 @@ class Profile(models.Model):
     zipcode = models.CharField(max_length=200, blank=True)
     country = models.CharField(max_length=200, blank=True)
     user_type = models.CharField(max_length=20, choices=USER_CHOICES, default='regular')
+    profile_picture = models.ImageField(upload_to='profile_pictures', blank=True, null=True)
 
     def __str__(self):
         return self.user.username
