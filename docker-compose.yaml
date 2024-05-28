@@ -1,0 +1,30 @@
+version: "3.8"
+services:
+  iterio_app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: "iterio_dock_container"
+    ports:
+      - 8000:8000
+    volumes:
+      - .:/iterio_project
+    image: iterio_app:iterio
+    entrypoint: docker_functionality/entrypoint.sh
+    depends_on:
+      - db
+  db:
+    image: mysql:8.0
+    volumes:
+      - mysql_data:/var/lib/mysql
+    container_name: "iterio_database"
+    environment:
+      MYSQL_DATABASE: iterio_db
+      MYSQL_USER: owner_admin
+      MYSQL_PASSWORD: admin12345
+      MYSQL_ROOT_PASSWORD: root12345
+    ports:
+      - "3306:3306"
+
+volumes:
+  mysql_data:

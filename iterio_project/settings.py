@@ -92,6 +92,19 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+##################################################
+#---> Change from sqlite to mysql for docker <---#
+##################################################
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'iterio_db',
+#         'USER': 'owner_admin',
+#         'PASSWORD': 'admin12345',
+#         'HOST': 'db',
+#         'PORT': '3306',
+#     }
+# }
 
 
 # Password validation
