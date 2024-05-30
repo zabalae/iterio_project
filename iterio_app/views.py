@@ -112,3 +112,36 @@ def update_password(request):
         else:
             form = ChangePasswordForm(current_user)
             return render(request, 'iterio_app/update_password.html', {'form':form})
+
+def home_services(request):
+    return render(request, 'iterio_app/home_services.html')
+
+def automotive_services(request):
+    return render(request, 'iterio_app/automotive_services.html')
+
+def health_wellness(request):
+    return render(request, 'iterio_app/health_wellness.html')
+
+def beauty_grooming(request):
+    return render(request, 'iterio_app/beauty_grooming.html')
+
+def cleaning_services(request):
+    return render(request, 'iterio_app/cleaning_services.html')
+
+def event_services(request):
+    return render(request, 'iterio_app/event_services.html')
+
+def technology_services(request):
+    return render(request, 'iterio_app/technology_services.html')
+
+def pet_services(request):
+    return render(request, 'iterio_app/pet_services.html')
+
+def education_tutoring(request):
+    return render(request, 'iterio_app/education_tutoring.html')
+
+def fitness_sport(request):
+    return render(request, 'iterio_app/fitness_sport.html')
+
+def other(request):
+    return render(request, 'iterio_app/other.html')
