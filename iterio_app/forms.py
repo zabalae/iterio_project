@@ -1,7 +1,8 @@
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm, SetPasswordForm
 from django import forms
-from .models import Profile
+from .models import Profile, Service, City
+from django_select2.forms import Select2MultipleWidget
 
 
 class UserInfoForm(forms.ModelForm):
@@ -86,3 +87,23 @@ class ChangePasswordForm(SetPasswordForm):
         self.fields['new_password2'].widget.attrs['placeholder'] = 'Confirm Password'
         self.fields['new_password2'].label = ''
         self.fields['new_password2'].help_text = '<span class="form-text text-muted"><small>Enter the same password as before, for verification.</small></span>'
+
+
+class ServiceForm(forms.ModelForm):
+    cities = forms.ModelMultipleChoiceField(
+        queryset=City.objects.all(),
+        widget=forms.SelectMultiple(attrs={'class': 'select2'}),
+        required=True
+    )
+
+    class Meta:
+        model = Service
+        fields = ['name', 'description', 'subcategory', 'cities', 'price_range']
+
+    class Media:
+        js = ('https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js',
+              'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js',
+              'js/service_form.js')
+        css = {
+            'all': ('https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css',)
+        }

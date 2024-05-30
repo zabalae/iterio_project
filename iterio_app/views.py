@@ -3,9 +3,10 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
-from .forms import SignUpForm, UpdateUserForm, ChangePasswordForm, UserInfoForm
+from .forms import SignUpForm, UpdateUserForm, ChangePasswordForm, UserInfoForm, ServiceForm
 from django import forms
-from .models import Profile, ServiceProvider
+from .models import Profile, ServiceProvider, Service, SubCategory
+from django.http import JsonResponse
 
 
 # Create your views here.
@@ -82,7 +83,7 @@ def update_user(request):
                     ServiceProvider.objects.filter(user=current_user).delete()
 
                 login(request, current_user)
-                return redirect('home')
+                return redirect('profile')
         else:
             user_form = UpdateUserForm(instance=current_user)
             user_info_form = UserInfoForm(instance=current_profile)
@@ -112,3 +113,40 @@ def update_password(request):
         else:
             form = ChangePasswordForm(current_user)
             return render(request, 'iterio_app/update_password.html', {'form':form})
+
+def create_service(request):
+    if request.method == 'POST':
+        form = ServiceForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('my_services')
+    else:
+        form = ServiceForm()
+    return render(request, 'iterio_app/create_service.html', {'form': form})
+
+def update_service(request, pk):
+    service = Service.objects.get(pk=pk)
+    if request.method == 'POST':
+        form = ServiceForm(request.POST, instance=service)
+        if form.is_valid():
+            form.save()
+            return redirect('my_services')
+    else:
+        form = ServiceForm(instance=service)
+    return render(request, 'iterio_app/update_service.html', {'form': form})
+
+
+def my_services(request):
+    try:
+        service_provider = ServiceProvider.objects.get(user=request.user)
+        services = service_provider.services.all()
+    except ServiceProvider.DoesNotExist:
+        services = []
+
+    return render(request, 'iterio_app/my_services.html', {'services': services})
+
+
+#view to handle subcategory loading
+def get_subcategories(request, category_id):
+    subcategories = SubCategory.objects.filter(category_id=category_id)
+    return JsonResponse(subcategories.values('id', 'name'), safe=False)

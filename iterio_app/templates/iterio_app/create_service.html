@@ -1,0 +1,79 @@
+{% extends 'main.html' %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-4">Create Service</h1>
+    <form method="post" id="service-form" class="bg-white p-6 rounded-lg shadow-md">
+        {% csrf_token %}
+
+        <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="id_name">
+                {{ form.name.label_tag }}
+            </label>
+            {{ form.name|add_class:"shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" }}
+        </div>
+
+        <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="id_description">
+                {{ form.description.label_tag }}
+            </label>
+            {{ form.description|add_class:"shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" }}
+        </div>
+
+        <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="id_category">
+                {{ form.category.label_tag }}
+            </label>
+            {{ form.category|add_class:"shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" }}
+        </div>
+
+        <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="id_subcategory">
+                {{ form.subcategory.label_tag }}
+            </label>
+            {{ form.subcategory|add_class:"shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" }}
+        </div>
+
+        <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="id_cities">
+                {{ form.cities.label_tag }}
+            </label>
+            {{ form.cities|add_class:"shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline select2" }}
+        </div>
+
+        <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="id_price_range">
+                {{ form.price_range.label_tag }}
+            </label>
+            {{ form.price_range|add_class:"shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" }}
+        </div>
+
+        <div class="flex items-center justify-between">
+            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                Save
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+$(document).ready(function() {
+    $('.select2').select2();
+
+    $('#id_category').change(function() {
+        var categoryId = $(this).val();
+        $.ajax({
+            url: '/get_subcategories/' + categoryId,
+            method: 'GET',
+            success: function(data) {
+                var subcategorySelect = $('#id_subcategory');
+                subcategorySelect.empty();
+                $.each(data, function(index, subcategory) {
+                    subcategorySelect.append(new Option(subcategory.name, subcategory.id));
+                });
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

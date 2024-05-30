@@ -137,11 +137,20 @@ class SubCategory(models.Model):
     class Meta:
         verbose_name_plural = 'Sub-categories'
 
+class City(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return self.name
+
 # Service model
 class Service(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()
     subcategory = models.ForeignKey(SubCategory, on_delete=models.CASCADE, related_name='services')
+    cities = models.ManyToManyField(City, related_name='services')
+    price_range = models.CharField(max_length=100)
+
 
     def __str__(self):
         return self.name

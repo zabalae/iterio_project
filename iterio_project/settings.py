@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'iterio_app.apps.IterioAppConfig',
     'tailwind',
     'theme',
+    'django_select2',
 ]
 
 TAILWIND_APP_NAME = 'theme'
