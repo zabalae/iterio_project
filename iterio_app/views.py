@@ -124,7 +124,7 @@ def create_service(request):
     cities = City.objects.all()
 
     if request.method == "POST":
-        form = ServiceForm(request.POST)
+        form = ServiceForm(request.POST, request.FILES)
         if form.is_valid():
             service = form.save(commit=False)
             service.save()
@@ -133,11 +133,12 @@ def create_service(request):
     else:
         form = ServiceForm()
 
-    return render(request, 'iterio_app/create_service.html', {
+    context = {
         'form': form,
         'categories': categories,
         'cities': cities,
-    })
+    }
+    return render(request, 'iterio_app/create_service.html', context)
 
 def home_services(request):
     return render(request, 'iterio_app/home_services.html')
