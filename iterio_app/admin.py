@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Category, Profile, SubCategory, Service, ServiceProvider, Booking
+from .models import Category, Profile, SubCategory, Service, ServiceProvider, Booking, City
 from django.contrib.auth.models import User
 
 
@@ -26,3 +26,4 @@ admin.site.register(Service)
 admin.site.register(ServiceProvider)
 admin.site.register(Booking)
 admin.site.register(SubCategory)
+admin.site.register(City)

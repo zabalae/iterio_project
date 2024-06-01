@@ -137,6 +137,11 @@ class SubCategory(models.Model):
     class Meta:
         verbose_name_plural = 'Sub-categories'
 
+class City(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    def __str__(self):
+        return self.name
+
 # Service model
 class Service(models.Model):
     name = models.CharField(max_length=100)
@@ -150,8 +155,6 @@ class Service(models.Model):
 class ServiceProvider(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     bio = models.TextField()
-    phone = models.CharField(max_length=15)
-    address = models.CharField(max_length=255)
     services = models.ManyToManyField(Service, related_name='providers')
 
     def __str__(self):
