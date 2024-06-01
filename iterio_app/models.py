@@ -66,7 +66,12 @@ class SubCategory(models.Model):
 class Service(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()
+    price_range = models.CharField(max_length=100, blank=True)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='services', default=11)
     subcategory = models.ForeignKey(SubCategory, on_delete=models.CASCADE, related_name='services')
+    cities = models.ManyToManyField(City, related_name='services')
+    picture = models.ImageField(upload_to='service_pictures', blank=True, null=True)
+    contact_info = models.TextField(blank=True)
 
     def __str__(self):
         return self.name
