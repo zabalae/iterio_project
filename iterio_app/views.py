@@ -3,9 +3,9 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
-from .forms import SignUpForm, UpdateUserForm, ChangePasswordForm, UserInfoForm
+from .forms import SignUpForm, UpdateUserForm, ChangePasswordForm, UserInfoForm, ServiceForm
 from django import forms
-from .models import Profile, ServiceProvider
+from .models import Profile, ServiceProvider, SubCategory, Category, City
 
 
 # Create your views here.
@@ -112,6 +112,32 @@ def update_password(request):
         else:
             form = ChangePasswordForm(current_user)
             return render(request, 'iterio_app/update_password.html', {'form':form})
+
+
+def load_subcategories(request):
+    category_id = request.GET.get('category')
+    subcategories = SubCategory.objects.filter(category_id=category_id).all()
+    return render(request, 'iterio_app/subcategory_dropdown_list_options.html', {'subcategories': subcategories})
+
+def create_service(request):
+    categories = Category.objects.all()
+    cities = City.objects.all()
+
+    if request.method == "POST":
+        form = ServiceForm(request.POST)
+        if form.is_valid():
+            service = form.save(commit=False)
+            service.save()
+            form.save_m2m()
+            return redirect('profile')
+    else:
+        form = ServiceForm()
+
+    return render(request, 'iterio_app/create_service.html', {
+        'form': form,
+        'categories': categories,
+        'cities': cities,
+    })
 
 def home_services(request):
     return render(request, 'iterio_app/home_services.html')

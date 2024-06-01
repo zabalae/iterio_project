@@ -1,0 +1,82 @@
+{% extends 'main.html' %}
+
+{% load static %}
+{% load static tailwind_tags %}
+{% tailwind_css %}
+
+{% block content %}
+<div class="bg-gray-100 min-h-screen flex items-center justify-center">
+    <div class="max-w-lg w-full bg-white p-8 rounded-lg shadow-lg">
+        <h1 class="text-3xl font-bold text-gray-900 mb-6 text-center">Create Service</h1>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="space-y-4">
+                <!-- Name -->
+                <div>
+                    <label for="name" class="block text-sm font-medium text-gray-700">Service Name</label>
+                    <input type="text" name="name" id="name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Service Name">
+                </div>
+
+                <!-- Description -->
+                <div>
+                    <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
+                    <textarea name="description" id="description" rows="4" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Service Description"></textarea>
+                </div>
+
+                <!-- Price Range -->
+                <div>
+                    <label for="price_range" class="block text-sm font-medium text-gray-700">Price Range</label>
+                    <input type="text" name="price_range" id="price_range" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Price Range">
+                </div>
+
+                <!-- Category -->
+                <div>
+                    <label for="category" class="block text-sm font-medium text-gray-700">Category</label>
+                    <select name="category" id="category" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" onchange="fetchSubcategories()">
+                        <option value="" disabled selected>Select a category</option>
+                        {% for category in categories %}
+                            <option value="{{ category.id }}">{{ category.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Subcategory -->
+                <div>
+                    <label for="subcategory" class="block text-sm font-medium text-gray-700">Subcategory</label>
+                    <select name="subcategory" id="subcategory" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        <option value="" disabled selected>Select a subcategory</option>
+                    </select>
+                </div>
+
+                <!-- Cities -->
+                <div>
+                    <label for="cities" class="block text-sm font-medium text-gray-700">Cities</label>
+                    <select name="cities" id="cities" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" multiple>
+                        {% for city in cities %}
+                            <option value="{{ city.id }}">{{ city.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="mt-8">
+                <button type="submit" class="w-full py-2 px-4 bg-gray-900 text-white font-semibold rounded-md shadow-sm hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Create Service</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function fetchSubcategories() {
+        const categoryId = document.getElementById('category').value;
+        const subcategorySelect = document.getElementById('subcategory');
+
+        fetch(`/ajax/load-subcategories/?category=${categoryId}`)
+            .then(response => response.text())
+            .then(data => {
+                subcategorySelect.innerHTML = data;
+            });
+    }
+</script>
+{% endblock %}
