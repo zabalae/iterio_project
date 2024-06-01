@@ -1,14 +1,20 @@
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm, SetPasswordForm
 from django import forms
-from .models import Profile
+from .models import Profile, City, Service, Category, SubCategory
 
 
 class UserInfoForm(forms.ModelForm):
     phone = forms.CharField(label="", widget=forms.TextInput(attrs={'class':'form-control', 'placeholder':'Phone'}), required=False)
     address1 = forms.CharField(label="", widget=forms.TextInput(attrs={'class':'form-control', 'placeholder':'Address 1'}), required=False)
     address2 = forms.CharField(label="", widget=forms.TextInput(attrs={'class':'form-control', 'placeholder':'Address 2'}), required=False)
-    city = forms.ChoiceField(label="", choices=Profile.PR_CITIES, widget=forms.Select(attrs={'class':'form-control', 'placeholder':'City'}), required=False)
+    city = forms.ModelChoiceField(
+        label="",
+        queryset=City.objects.all(),
+        widget=forms.Select(attrs={'class': 'form-control', 'placeholder': 'City'}),
+        required=False
+    )
+
     zipcode = forms.CharField(label="", widget=forms.TextInput(attrs={'class':'form-control', 'placeholder':'Zipcode'}), required=False)
     country = forms.CharField(label="", widget=forms.TextInput(attrs={'class':'form-control', 'placeholder':'Country'}), required=False)
     user_type = forms.ChoiceField(choices=Profile.USER_CHOICES, required=True)
@@ -86,3 +92,31 @@ class ChangePasswordForm(SetPasswordForm):
         self.fields['new_password2'].widget.attrs['placeholder'] = 'Confirm Password'
         self.fields['new_password2'].label = ''
         self.fields['new_password2'].help_text = '<span class="form-text text-muted"><small>Enter the same password as before, for verification.</small></span>'
+
+
+class ServiceForm(forms.ModelForm):
+    class Meta:
+        model = Service
+        fields = ['name', 'description', 'price_range', 'category', 'subcategory', 'cities', 'picture', 'contact_info']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Service Name'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Description'}),
+            'price_range': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Price Range'}),
+            'category': forms.Select(attrs={'class': 'form-control'}),
+            'subcategory': forms.Select(attrs={'class': 'form-control'}),
+            'cities': forms.SelectMultiple(attrs={'class': 'form-control'}),
+            'contact_info': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Contact Information'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(ServiceForm, self).__init__(*args, **kwargs)
+        self.fields['subcategory'].queryset = SubCategory.objects.none()
+
+        if 'category' in self.data:
+            try:
+                category_id = int(self.data.get('category'))
+                self.fields['subcategory'].queryset = SubCategory.objects.filter(category_id=category_id).order_by('name')
+            except (ValueError, TypeError):
+                pass  # Invalid input from the client; ignore and fallback to empty SubCategory queryset
+        elif self.instance.pk:
+            self.fields['subcategory'].queryset = self.instance.category.subcategories.order_by('name')
