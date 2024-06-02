@@ -21,103 +21,16 @@
             <p class="text-gray-600">Discover the wide range of services we offer</p>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <!-- Service Card 1 -->
+            <!-- Display All the Category's-->
+            {% for category in categories %}
             <div class="bg-white rounded-lg shadow-lg p-6 hover:scale-105">
-                <a href="home_services">
-                    <img src="{% static 'images/home-services.png' %}" alt="Service 1" class="w-full h-40 object-cover rounded-lg mb-4">
-                    <h3 class="text-xl font-bold mb-2">Home Services</h3>
-                    <p class="text-gray-600">Plumbing • Electrical Work • Painting • Carpentry • Interior Design...</p>
+                <a href="{{ category.redirect }}">
+                    <img src="{{ category.img_path }}" alt="{{ category.name }}" class="w-full h-40 object-cover rounded-lg mb-4">
+                    <h3 class="text-xl font-bold mb-2">{{ category.name }}</h3>
+                    <p class="text-gray-600">{{ category.details }}</p>
                 </a>
             </div>
-            <!-- Service Card 2 -->
-            <div class="bg-white rounded-lg shadow-lg p-6 hover:scale-105">
-                <a href="automotive_services">
-                    <img src="{% static 'images/automotive-services.png' %}" alt="Service 2" class="w-full h-40 object-cover rounded-lg mb-4">
-                    <h3 class="text-xl font-bold mb-2">Automotive Services</h3>
-                    <p class="text-gray-600">Car Mechanics • Auto Body Repair • Car Detailing • Tire Services...</p>
-                </a>
-            </div>
-            <!-- Service Card 3 -->
-            <div class="bg-white rounded-lg shadow-lg p-6 hover:scale-105">
-                <a href="health_wellness">
-                    <img src="{% static 'images/health-wellness.png' %}" alt="Service 3" class="w-full h-40 object-cover rounded-lg mb-4">
-                    <h3 class="text-xl font-bold mb-2">Health & Wellness Services</h3>
-                    <p class="text-gray-600">Massage Therapy • Nutrition • Mental Health Counseling • Acupunture...</p>
-                </a>
-            </div>
-
-            <!-- Service Card 4 -->
-            <div class="bg-white rounded-lg shadow-lg p-6 hover:scale-105">
-                <a href="beauty_grooming">
-                    <img src="{% static 'images/beauty-services.png' %}" alt="Service 4" class="w-full h-40 object-cover rounded-lg mb-4">
-                    <h3 class="text-xl font-bold mb-2">Beauty & Grooming Services</h3>
-                    <p class="text-gray-600">Hair Styling/Cutting • Nail Services • Makeup • Barber • Spa...</p>
-                </a>
-            </div>
-
-            <!-- Service Card 5 -->
-            <div class="bg-white rounded-lg shadow-lg p-6 hover:scale-105">
-                <a href="cleaning_services">
-                    <img src="{% static 'images/cleaning-services.png' %}" alt="Service 5" class="w-full h-40 object-cover rounded-lg mb-4">
-                    <h3 class="text-xl font-bold mb-2">Cleaning Services</h3>
-                    <p class="text-gray-600">House Cleaning • Office Cleaning • Carpet Cleaning • Window Cleaning...</p>
-                </a>
-            </div>
-
-            <!-- Service Card 6 -->
-            <div class="bg-white rounded-lg shadow-lg p-6 hover:scale-105">
-                <a href="event_services">
-                    <img src="{% static 'images/event-services.png' %}" alt="Service 6" class="w-full h-40 object-cover rounded-lg mb-4">
-                    <h3 class="text-xl font-bold mb-2">Event Services</h3>
-                    <p class="text-gray-600">Event Planning • Catering Services • DJ Services • Floris Services • Party Rentals...</p>
-                </a>
-            </div>
-
-            <!-- Service Card 7 -->
-            <div class="bg-white rounded-lg shadow-lg p-6 hover:scale-105">
-                <a href="technology_services">
-                    <img src="{% static 'images/technology-services.png' %}" alt="Service 7" class="w-full h-40 object-cover rounded-lg mb-4">
-                    <h3 class="text-xl font-bold mb-2">Technology Services</h3>
-                    <p class="text-gray-600">IT Support • Computer Repair • Software Development • Graphic Design • Web Design...</p>
-                </a>
-            </div>
-
-            <!-- Service Card 8 -->
-            <div class="bg-white rounded-lg shadow-lg p-6 hover:scale-105">
-                <a href="pet_services">
-                    <img src="{% static 'images/pet-services.png' %}" alt="Service 8" class="w-full h-40 object-cover rounded-lg mb-4">
-                    <h3 class="text-xl font-bold mb-2">Pet Services</h3>
-                    <p class="text-gray-600">Dog Walking • Pet Sitting • Veterinary Services • Grooming Services • Training Services...</p>
-                </a>
-            </div>
-
-            <!-- Service Card 9 -->
-            <div class="bg-white rounded-lg shadow-lg p-6 hover:scale-105">
-                <a href="education_tutoring">
-                    <img src="{% static 'images/education-services.png' %}" alt="Service 9" class="w-full h-40 object-cover rounded-lg mb-4">
-                    <h3 class="text-xl font-bold mb-2">Education & Tutoring Services</h3>
-                    <p class="text-gray-600">Tutoring • Test Preparation • Music Lessons • Academic Coaching • Art Classes...</p>
-                </a>
-            </div>
-
-            <!-- Service Card 10 -->
-            <div class="bg-white rounded-lg shadow-lg p-6 hover:scale-105">
-                <a href="fitness_sport">
-                    <img src="{% static 'images/fitness-services.png' %}" alt="Service 10" class="w-full h-40 object-cover rounded-lg mb-4">
-                    <h3 class="text-xl font-bold mb-2">Fitness & Sport Services</h3>
-                    <p class="text-gray-600">Personal Training • Yoga/Pilates • Martial Arts • Swimming Lessons • Fitness Classes...</p>
-                </a>
-            </div>
-
-            <!-- Service Card 11 -->
-            <div class="bg-white rounded-lg shadow-lg p-6 hover:scale-105">
-                <a href="other">
-                    <img src="{% static 'images/iterio-logo2.png' %}" alt="Service 10" class="w-full h-40 object-cover rounded-lg mb-4">
-                    <h3 class="text-xl font-bold mb-2">Other Services</h3>
-                    <p class="text-gray-600"></p>
-                </a>
-            </div>
-            <!-- ----- -->
+            {% endfor %}
         </div>
     </section>
 </div>
