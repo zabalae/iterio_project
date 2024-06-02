@@ -12,7 +12,11 @@ from .models import Profile, ServiceProvider, SubCategory, Category, City
 
 
 def home(request):
-    return render(request, 'iterio_app/home.html')
+    category_data = Category.objects.all()
+    content = {
+        'categories': category_data
+    }
+    return render(request, 'iterio_app/home.html', content)
 
 def aboutUs(request):
     return render(request, 'iterio_app/aboutUs.html')
