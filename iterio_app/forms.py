@@ -98,7 +98,7 @@ class ChangePasswordForm(SetPasswordForm):
 class ServiceForm(forms.ModelForm):
     class Meta:
         model = Service
-        fields = ['name', 'description', 'price_range', 'category', 'subcategory', 'cities', 'picture', 'contact_info']
+        fields = ['name', 'description', 'price_range', 'category', 'subcategory', 'cities', 'picture', 'availability', 'contact_info']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Service Name'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Description'}),
@@ -106,7 +106,9 @@ class ServiceForm(forms.ModelForm):
             'category': forms.Select(attrs={'class': 'form-control'}),
             'subcategory': forms.Select(attrs={'class': 'form-control'}),
             'cities': SelectMultiple(attrs={'class': 'form-control'}),
+            'availability': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Availability'}),
             'contact_info': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Contact Information'}),
+
         }
 
     def __init__(self, *args, **kwargs):
