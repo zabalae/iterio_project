@@ -1,0 +1,30 @@
+{% extends 'main.html' %}
+
+{% load static %}
+{% load static tailwind_tags %}
+{% tailwind_css %}
+
+{% block content %}
+<div class="bg-gray-100 min-h-screen flex items-center justify-center py-12">
+    <div class="max-w-3xl w-full bg-white p-8 rounded-lg shadow-lg">
+        <h1 class="text-3xl font-bold text-gray-900 mb-8 text-center">{{ service.name }}</h1>
+        <div class="space-y-6">
+            <div class="border border-gray-300 p-6 rounded-lg shadow-sm">
+                {% if service.picture %}
+                    <div class="w-full h-64">
+                        <img src="{{ service.picture.url }}" alt="{{ service.name }}" class="w-full h-full object-cover rounded-md">
+                    </div>
+                {% endif %}
+                <div class="mt-4">
+                    <p class="text-gray-600">{{ service.description }}</p>
+                    <p class="text-gray-600 mt-4"><strong>Price Range:</strong> {{ service.price_range }}</p>
+                    <p class="text-gray-600 mt-2"><strong>Category:</strong> {{ service.category.name }}</p>
+                    <p class="text-gray-600 mt-2"><strong>Subcategory:</strong> {{ service.subcategory.name }}</p>
+                    <p class="text-gray-600 mt-2"><strong>Cities:</strong> {% for city in service.cities.all %}{{ city.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>
+                    <p class="text-gray-600 mt-2"><strong>Contact Info:</strong> {{ service.contact_info }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -13,6 +13,7 @@ urlpatterns = [
     path('ajax/load-subcategories/', views.load_subcategories, name='ajax_load_subcategories'),
     path('create-service/', views.create_service, name='create_service'),
     path('my-services/', views.my_services, name='my_services'),
+    path('service/<int:pk>/', views.service_detail, name='service_detail'),
     path('home_services/', views.home_services, name='home_services'),
     path('automotive_services/', views.automotive_services, name='automotive_services'),
     path('health_wellness/', views.health_wellness, name='health_wellness'),

@@ -1,11 +1,11 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from .forms import SignUpForm, UpdateUserForm, ChangePasswordForm, UserInfoForm, ServiceForm
 from django import forms
-from .models import Profile, ServiceProvider, SubCategory, Category, City
+from .models import Profile, ServiceProvider, SubCategory, Category, City, Service
 
 
 # Create your views here.
@@ -153,6 +153,11 @@ def my_services(request):
     service_provider = ServiceProvider.objects.get(user=user)
     services = service_provider.services.all()
     return render(request, 'iterio_app/my_services.html', {'services': services})
+
+
+def service_detail(request, pk):
+    service = get_object_or_404(Service, pk=pk)
+    return render(request, 'iterio_app/service_detail.html', {'service': service})
 
 def home_services(request):
     return render(request, 'iterio_app/home_services.html')
