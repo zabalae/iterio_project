@@ -1,6 +1,8 @@
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm, SetPasswordForm
 from django import forms
+from django.forms import SelectMultiple
+
 from .models import Profile, City, Service, Category, SubCategory
 
 
@@ -50,11 +52,10 @@ class SignUpForm(UserCreationForm):
     email = forms.EmailField(label="", widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Email Address'}))
     first_name = forms.CharField(label="", max_length=100, widget=forms.TextInput(attrs={'class':'form-control', 'placeholder':'First Name'}))
     last_name = forms.CharField(label="", max_length=100, widget=forms.TextInput(attrs={'class':'form-control', 'placeholder':'Last Name'}))
-    user_type = forms.ChoiceField(choices=Profile.USER_CHOICES, required=True)
 
     class Meta:
         model = User
-        fields = ('username', 'first_name', 'last_name', 'email', 'password1', 'password2', 'user_type')
+        fields = ('username', 'first_name', 'last_name', 'email', 'password1', 'password2')
 
     def __init__(self, *args, **kwargs):
         super(SignUpForm, self).__init__(*args, **kwargs)
@@ -104,7 +105,7 @@ class ServiceForm(forms.ModelForm):
             'price_range': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Price Range'}),
             'category': forms.Select(attrs={'class': 'form-control'}),
             'subcategory': forms.Select(attrs={'class': 'form-control'}),
-            'cities': forms.SelectMultiple(attrs={'class': 'form-control'}),
+            'cities': SelectMultiple(attrs={'class': 'form-control'}),
             'contact_info': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Contact Information'}),
         }
 

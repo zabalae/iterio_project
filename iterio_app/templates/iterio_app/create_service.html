@@ -57,17 +57,17 @@
                 <!-- Cities -->
                 <div>
                     <label for="cities" class="block text-sm font-medium text-gray-700">Cities</label>
-                    <select name="cities" id="cities" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" multiple>
+                    <select name="cities" id="cities" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" multiple="multiple">
                         {% for city in cities %}
                             <option value="{{ city.id }}">{{ city.name }}</option>
-                        {% endfor %}
+                    {% endfor %}
                     </select>
                 </div>
 
                 <!-- Contact Info -->
                 <div>
                     <label for="contact_info" class="block text-sm font-medium text-gray-700">Contact Information</label>
-                    <input type="text" name="contact_info" id="contact_info" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Contact Information">
+                    <textarea name="contact_info" id="contact_info" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Contact Information"></textarea>
                 </div>
 
             </div>
@@ -80,7 +80,22 @@
     </div>
 </div>
 
+<!-- Include Choices.js CSS and JS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+
 <script>
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const citiesSelect = document.getElementById('cities');
+        const choices = new Choices(citiesSelect, {
+            removeItemButton: true,
+            maxItemCount: 100,
+            searchResultLimit: 100,
+            renderChoiceLimit: 100
+        });
+    });
+
     function fetchSubcategories() {
         const categoryId = document.getElementById('category').value;
         const subcategorySelect = document.getElementById('subcategory');
