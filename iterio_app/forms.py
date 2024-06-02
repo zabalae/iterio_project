@@ -1,6 +1,8 @@
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm, SetPasswordForm
 from django import forms
+from django.forms import SelectMultiple
+
 from .models import Profile, City, Service, Category, SubCategory
 
 
@@ -95,12 +97,6 @@ class ChangePasswordForm(SetPasswordForm):
 
 
 class ServiceForm(forms.ModelForm):
-    cities = forms.ModelMultipleChoiceField(
-        queryset=City.objects.all(),
-        label="Cities",
-        widget=forms.SelectMultiple(attrs={'class': 'form-control'}),
-        required=True  # Make city selection mandatory
-    )
     class Meta:
         model = Service
         fields = ['name', 'description', 'price_range', 'category', 'subcategory', 'cities', 'picture', 'contact_info']
@@ -110,7 +106,7 @@ class ServiceForm(forms.ModelForm):
             'price_range': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Price Range'}),
             'category': forms.Select(attrs={'class': 'form-control'}),
             'subcategory': forms.Select(attrs={'class': 'form-control'}),
-            #'cities': forms.SelectMultiple(attrs={'class': 'form-control'}),
+            'cities': SelectMultiple(attrs={'class': 'form-control'}),
             'contact_info': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Contact Information'}),
         }
 

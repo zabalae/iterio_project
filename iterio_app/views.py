@@ -131,8 +131,6 @@ def create_service(request):
             service = form.save(commit=False)
             service.save()
             form.save_m2m()
-            selected_cities = form.cleaned_data['cities']
-            service.cities.set(selected_cities)
             service_provider.services.add(service)
             return redirect('profile')
     else:
