@@ -5,26 +5,32 @@
 {% tailwind_css %}
 
 {% block content %}
-<div class="bg-gray-100 min-h-screen flex items-center justify-center">
-    <div class="max-w-3xl w-full bg-white p-8 rounded-lg shadow-lg">
-        <h1 class="text-3xl font-bold text-gray-900 mb-6 text-center">My Services</h1>
+<div class="bg-gray-100 min-h-screen flex items-center justify-center py-12">
+    <div class="max-w-4xl w-full bg-white p-8 rounded-lg shadow-lg">
+        <h1 class="text-3xl font-bold text-gray-900 mb-8 text-center">My Services</h1>
         {% if services %}
-            <div class="space-y-4">
+            <div class="space-y-6">
                 {% for service in services %}
-                    <div class="border border-gray-300 p-4 rounded-lg shadow-sm">
-                        <h2 class="text-xl font-bold text-gray-800">{{ service.name }}</h2>
-                        <p class="text-gray-600">{{ service.description }}</p>
-                        <p class="text-gray-600">Price Range: {{ service.price_range }}</p>
-                        <p class="text-gray-600">Category: {{ service.category.name }}</p>
-                        <p class="text-gray-600">Subcategory: {{ service.subcategory.name }}</p>
-                        <p class="text-gray-600">Cities: {% for city in service.cities.all %}{{ city.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>
-                        <p class="text-gray-600">Contact Info: {{ service.contact_info }}</p>
-                        {% if service.picture %}
-                            <div class="mt-2">
-                                <img src="{{ service.picture.url }}" alt="{{ service.name }}" class="w-full h-auto rounded-md">
+                    <a href="{% url 'service_detail' service.pk %}" class="block border border-gray-300 p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300">
+                        <div class="flex items-start space-x-4">
+                            <div class="w-32 h-32 flex-shrink-0">
+                                {% if service.picture %}
+                                    <img src="{{ service.picture.url }}" alt="{{ service.name }}" class="w-full h-full object-cover rounded-md">
+                                {% else %}
+                                    <div class="w-full h-full bg-gray-200 rounded-md flex items-center justify-center text-gray-500">No Image</div>
+                                {% endif %}
                             </div>
-                        {% endif %}
-                    </div>
+                            <div class="flex-grow">
+                                <h2 class="text-xl font-bold text-gray-800">{{ service.name }}</h2>
+                                <p class="text-gray-600 mt-1">{{ service.description }}</p>
+                                <p class="text-gray-600 mt-1">Price Range: {{ service.price_range }}</p>
+                                <p class="text-gray-600 mt-1">Category: {{ service.category.name }}</p>
+                                <p class="text-gray-600 mt-1">Subcategory: {{ service.subcategory.name }}</p>
+                                <p class="text-gray-600 mt-1">Cities: {% for city in service.cities.all %}{{ city.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>
+                                <p class="text-gray-600 mt-1">Contact Info: {{ service.contact_info }}</p>
+                            </div>
+                        </div>
+                    </a>
                 {% endfor %}
             </div>
         {% else %}
