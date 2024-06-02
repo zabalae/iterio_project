@@ -120,6 +120,8 @@ def load_subcategories(request):
     return render(request, 'iterio_app/subcategory_dropdown_list_options.html', {'subcategories': subcategories})
 
 def create_service(request):
+    user = request.user
+    service_provider = ServiceProvider.objects.get(user=user)
     categories = Category.objects.all()
     cities = City.objects.all()
 
@@ -129,6 +131,9 @@ def create_service(request):
             service = form.save(commit=False)
             service.save()
             form.save_m2m()
+            selected_cities = form.cleaned_data['cities']
+            service.cities.set(selected_cities)
+            service_provider.services.add(service)
             return redirect('profile')
     else:
         form = ServiceForm()
@@ -139,6 +144,13 @@ def create_service(request):
         'cities': cities,
     }
     return render(request, 'iterio_app/create_service.html', context)
+
+
+def my_services(request):
+    user = request.user
+    service_provider = ServiceProvider.objects.get(user=user)
+    services = service_provider.services.all()
+    return render(request, 'iterio_app/my_services.html', {'services': services})
 
 def home_services(request):
     return render(request, 'iterio_app/home_services.html')
