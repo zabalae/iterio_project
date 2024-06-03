@@ -74,6 +74,7 @@ class Service(models.Model):
     subcategory = models.ForeignKey(SubCategory, on_delete=models.CASCADE, related_name='services')
     cities = models.ManyToManyField(City, related_name='services')
     picture = models.ImageField(upload_to='service_pictures', blank=True, null=True)
+    availability = models.TextField(blank=True)
     contact_info = models.TextField(blank=True)
 
     def __str__(self):

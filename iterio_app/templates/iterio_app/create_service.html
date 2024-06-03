@@ -64,6 +64,12 @@
                     </select>
                 </div>
 
+                <!-- Availability -->
+                <div>
+                    <label for="availability" class="block text-sm font-medium text-gray-700">Availability</label>
+                    <textarea name="availability" id="availability" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Availability"></textarea>
+                </div>
+
                 <!-- Contact Info -->
                 <div>
                     <label for="contact_info" class="block text-sm font-medium text-gray-700">Contact Information</label>
@@ -84,6 +90,9 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
 <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
 
+<!-- Include TinyMCE -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/5.10.2/tinymce.min.js" referrerpolicy="origin"></script>
+
 <script>
 
     document.addEventListener('DOMContentLoaded', function () {
@@ -93,6 +102,20 @@
             maxItemCount: 100,
             searchResultLimit: 100,
             renderChoiceLimit: 100
+        });
+
+        // Initialize TinyMCE
+        tinymce.init({
+            selector: 'textarea[name=description]',  // change this value according to your HTML
+            menubar: false,
+            plugins: [
+                'advlist autolink lists link image charmap print preview anchor',
+                'searchreplace visualblocks code fullscreen',
+                'insertdatetime media table paste code help wordcount'
+            ],
+            toolbar: 'undo redo | formatselect | bold italic backcolor | \
+                      alignleft aligncenter alignright alignjustify | \
+                      bullist numlist outdent indent | removeformat | help'
         });
     });
 
