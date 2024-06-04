@@ -16,7 +16,7 @@
                     </div>
                 {% endif %}
                 <div class="mt-4">
-                    <p class="text-gray-600">{{ service.description|safe }}</p>
+                    <div class="text-gray-600"><strong>Description:</strong> {{ service.description|safe }}</div>
                     <p class="text-gray-600 mt-4"><strong>Price Range:</strong> {{ service.price_range }}</p>
                     <p class="text-gray-600 mt-2"><strong>Category:</strong> {{ service.category.name }}</p>
                     <p class="text-gray-600 mt-2"><strong>Subcategory:</strong> {{ service.subcategory.name }}</p>
@@ -28,4 +28,16 @@
         </div>
     </div>
 </div>
+
+<style>
+/* Add custom styles for the description content */
+.description-content ul {
+    list-style-type: disc; /* Ensure bullet points are shown */
+    margin-left: 20px; /* Indent the list */
+}
+.description-content ol {
+    list-style-type: decimal; /* Ensure ordered lists are shown */
+    margin-left: 20px; /* Indent the list */
+}
+</style>
 {% endblock %}
