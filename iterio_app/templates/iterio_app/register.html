@@ -1,14 +1,77 @@
 {% extends 'main.html' %}
 
+{% load static %}
+{% load static tailwind_tags %}
+{% tailwind_css %}
+
 {% block content %}
 <div class="bg-gray-100 min-h-screen flex items-center justify-center">
     <div class="max-w-md w-full bg-white p-8 rounded-lg shadow-lg">
         <h1 class="text-3xl font-bold text-gray-900 mb-6 text-center">Register</h1>
-        <form method="POST" action="{% url 'register' %}" >
+        <form method="POST" action="{% url 'register' %}">
             {% csrf_token %}
-            {{ form.as_p }}
-            <br></br>
-            <button type="submit" class="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-white bg-gray-900 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Sign up</button>
+            <div class="space-y-4">
+                <!-- Username -->
+                <div>
+                    <label for="{{ form.username.id_for_label }}" class="block text-sm font-medium text-gray-700">Username</label>
+                    {{ form.username }}
+                    {% if form.username.errors %}
+                        <p class="text-red-600 text-sm">{{ form.username.errors }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Email -->
+                <div>
+                    <label for="{{ form.email.id_for_label }}" class="block text-sm font-medium text-gray-700">Email Address</label>
+                    {{ form.email }}
+                    {% if form.email.errors %}
+                        <p class="text-red-600 text-sm">{{ form.email.errors }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- First Name -->
+                <div>
+                    <label for="{{ form.first_name.id_for_label }}" class="block text-sm font-medium text-gray-700">First Name</label>
+                    {{ form.first_name }}
+                    {% if form.first_name.errors %}
+                        <p class="text-red-600 text-sm">{{ form.first_name.errors }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Last Name -->
+                <div>
+                    <label for="{{ form.last_name.id_for_label }}" class="block text-sm font-medium text-gray-700">Last Name</label>
+                    {{ form.last_name }}
+                    {% if form.last_name.errors %}
+                        <p class="text-red-600 text-sm">{{ form.last_name.errors }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Password -->
+                <div>
+                    <label for="{{ form.password1.id_for_label }}" class="block text-sm font-medium text-gray-700">Password</label>
+                    {{ form.password1 }}
+                    {{ form.password1.help_text|safe }}
+                    {% if form.password1.errors %}
+                        <p class="text-red-600 text-sm">{{ form.password1.errors }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Confirm Password -->
+                <div>
+                    <label for="{{ form.password2.id_for_label }}" class="block text-sm font-medium text-gray-700">Confirm Password</label>
+                    {{ form.password2 }}
+                    {{ form.password2.help_text|safe }}
+                    {% if form.password2.errors %}
+                        <p class="text-red-600 text-sm">{{ form.password2.errors }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Submit Button -->
+                <div class="mt-6">
+                    <button type="submit" class="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-white bg-gray-900 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Sign up</button>
+                </div>
+            </div>
         </form>
     </div>
 </div>
