@@ -1,15 +1,50 @@
 {% extends 'main.html' %}
 
+{% load static %}
+{% load static tailwind_tags %}
+{% tailwind_css %}
+
 {% block content %}
 <div class="bg-gray-100 min-h-screen flex items-center justify-center">
     <!-- Update User -->
     <div class="max-w-md w-full bg-white p-8 rounded-lg shadow-lg">
         <h1 class="text-3xl font-bold text-gray-900 mb-6 text-center">Update Profile</h1>
-        <form method="POST" action="{% url 'update_user' %}" enctype="multipart/form-data" >
+        <form method="POST" action="{% url 'update_user' %}" enctype="multipart/form-data">
             {% csrf_token %}
-            {{ user_form.as_p }}
-            {{ user_info_form.as_p }}
-            <button type="submit" class="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-white bg-gray-900 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Update</button>
+            <div class="space-y-4">
+                <!-- User Form Fields -->
+                {% for field in user_form %}
+                    <div>
+                        <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.help_text %}
+                            <p class="text-gray-500 text-sm">{{ field.help_text|safe }}</p>
+                        {% endif %}
+                        {% if field.errors %}
+                            <p class="text-red-600 text-sm">{{ field.errors }}</p>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+
+                <!-- User Info Form Fields -->
+                {% for field in user_info_form %}
+                    <div>
+                        <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.help_text %}
+                            <p class="text-gray-500 text-sm">{{ field.help_text|safe }}</p>
+                        {% endif %}
+                        {% if field.errors %}
+                            <p class="text-red-600 text-sm">{{ field.errors }}</p>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+
+                <!-- Submit Button -->
+                <div class="mt-6">
+                    <button type="submit" class="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-white bg-gray-900 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Submit</button>
+                </div>
+            </div>
         </form>
     </div>
 </div>
