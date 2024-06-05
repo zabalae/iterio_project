@@ -160,34 +160,111 @@ def service_detail(request, pk):
     return render(request, 'iterio_app/service_detail.html', {'service': service})
 
 def home_services(request):
-    return render(request, 'iterio_app/home_services.html')
+    home_services_category = get_object_or_404(Category, name='Home Services')
+    subcategories = SubCategory.objects.filter(category=home_services_category)
+
+    context = {
+        'subcategories': subcategories, 
+        'desired_category': home_services_category
+    }
+    return render(request, 'iterio_app/services.html', context)
 
 def automotive_services(request):
-    return render(request, 'iterio_app/automotive_services.html')
+    automotive_services_category = get_object_or_404(Category, name='Automotive Services')
+    subcategories = SubCategory.objects.filter(category=automotive_services_category)
+
+    context = {
+        'subcategories': subcategories, 
+        'desired_category': automotive_services_category
+    }
+    return render(request, 'iterio_app/services.html', context)
 
 def health_wellness(request):
-    return render(request, 'iterio_app/health_wellness.html')
+    health_wellness_services_category = get_object_or_404(Category, name='Health & Wellness Services')
+    subcategories = SubCategory.objects.filter(category=health_wellness_services_category)
+
+    context = {
+        'subcategories': subcategories, 
+        'desired_category': health_wellness_services_category
+    }
+    return render(request, 'iterio_app/services.html', context)
 
 def beauty_grooming(request):
-    return render(request, 'iterio_app/beauty_grooming.html')
+    beauty_grooming_services_category = get_object_or_404(Category, name='Beauty & Grooming Services')
+    subcategories = SubCategory.objects.filter(category=beauty_grooming_services_category)
+
+    context = {
+        'subcategories': subcategories, 
+        'desired_category': beauty_grooming_services_category
+    }
+    return render(request, 'iterio_app/services.html', context)
 
 def cleaning_services(request):
-    return render(request, 'iterio_app/cleaning_services.html')
+    cleaning_services_category = get_object_or_404(Category, name='Cleaning Services')
+    subcategories = SubCategory.objects.filter(category=cleaning_services_category)
+
+    context = {
+        'subcategories': subcategories, 
+        'desired_category': cleaning_services_category
+    }
+    return render(request, 'iterio_app/services.html', context)
 
 def event_services(request):
-    return render(request, 'iterio_app/event_services.html')
+    event_services_category = get_object_or_404(Category, name='Event Services')
+    subcategories = SubCategory.objects.filter(category=event_services_category)
+
+    context = {
+        'subcategories': subcategories, 
+        'desired_category': event_services_category
+    }
+    return render(request, 'iterio_app/services.html', context)
 
 def technology_services(request):
-    return render(request, 'iterio_app/technology_services.html')
+    technology_services_category = get_object_or_404(Category, name='Technology Services')
+    subcategories = SubCategory.objects.filter(category=technology_services_category)
+
+    context = {
+        'subcategories': subcategories, 
+        'desired_category': technology_services_category
+    }
+    return render(request, 'iterio_app/services.html', context)
 
 def pet_services(request):
-    return render(request, 'iterio_app/pet_services.html')
+    pet_services_category = get_object_or_404(Category, name='Pet Services')
+    subcategories = SubCategory.objects.filter(category=pet_services_category)
+
+    context = {
+        'subcategories': subcategories, 
+        'desired_category': pet_services_category
+    }
+    return render(request, 'iterio_app/services.html', context)
 
 def education_tutoring(request):
-    return render(request, 'iterio_app/education_tutoring.html')
+    education_tutoring_services_category = get_object_or_404(Category, name='Education & Tutoring Services')
+    subcategories = SubCategory.objects.filter(category=education_tutoring_services_category)
+
+    context = {
+        'subcategories': subcategories, 
+        'desired_category': education_tutoring_services_category
+    }
+    return render(request, 'iterio_app/services.html', context)
 
 def fitness_sport(request):
-    return render(request, 'iterio_app/fitness_sport.html')
+    fitness_sport_services_category = get_object_or_404(Category, name='Fitness & Sport Services')
+    subcategories = SubCategory.objects.filter(category=fitness_sport_services_category)
+
+    context = {
+        'subcategories': subcategories, 
+        'desired_category': fitness_sport_services_category
+    }
+    return render(request, 'iterio_app/services.html', context)
 
 def other(request):
-    return render(request, 'iterio_app/other.html')
+    other_services_category = get_object_or_404(Category, name='Other Services')
+    subcategories = SubCategory.objects.filter(category=other_services_category)
+
+    context = {
+        'subcategories': subcategories, 
+        'desired_category': other_services_category
+    }
+    return render(request, 'iterio_app/services.html', context)
