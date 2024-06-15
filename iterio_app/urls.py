@@ -10,6 +10,10 @@ urlpatterns = [
     path('profile/', views.profile, name='profile'),
     path('update_user/', views.update_user, name='update_user'),
     path('update_password/', views.update_password, name='update_password'),
+    path('ajax/load-subcategories/', views.load_subcategories, name='ajax_load_subcategories'),
+    path('create-service/', views.create_service, name='create_service'),
+    path('my-services/', views.my_services, name='my_services'),
+    path('service/<int:pk>/', views.service_detail, name='service_detail'),
     path('home_services/', views.home_services, name='home_services'),
     path('automotive_services/', views.automotive_services, name='automotive_services'),
     path('health_wellness/', views.health_wellness, name='health_wellness'),
@@ -20,5 +24,5 @@ urlpatterns = [
     path('pet_services/', views.pet_services, name='pet_services'),
     path('education_tutoring/', views.education_tutoring, name='education_tutoring'),
     path('fitness_sport/', views.fitness_sport, name='fitness_sport'),
-    path('other/', views.other, name='other')
+    path('other/', views.other_services, name='other')
 ]

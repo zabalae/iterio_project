@@ -1,0 +1,36 @@
+{% extends 'main.html' %}
+
+{% load static %}
+{% load static tailwind_tags %}
+{% tailwind_css %}
+
+{% block content %}
+<div class="bg-gray-100 min-h-screen flex items-center justify-center py-12">
+    <div class="max-w-4xl w-full bg-white p-8 rounded-lg shadow-lg">
+        <h1 class="text-3xl font-bold text-gray-900 mb-8 text-center">My Services</h1>
+        {% if services %}
+            <div class="space-y-6">
+                {% for service in services %}
+                    <a href="{% url 'service_detail' service.pk %}" class="block border border-gray-300 p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300">
+                        <div class="flex items-start space-x-4">
+                            <div class="w-32 h-32 flex-shrink-0">
+                                {% if service.picture %}
+                                    <img src="{{ service.picture.url }}" alt="{{ service.name }}" class="w-full h-full object-cover rounded-md">
+                                {% else %}
+                                    <div class="w-full h-full bg-gray-200 rounded-md flex items-center justify-center text-gray-500">No Image</div>
+                                {% endif %}
+                            </div>
+                            <div class="flex-grow">
+                                <h2 class="text-xl font-bold text-gray-800">{{ service.name }}</h2>
+                                <p class="text-gray-600 mt-1">{{ service.description|safe|truncatewords_html:30  }}</p>
+                            </div>
+                        </div>
+                    </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-gray-600 text-center">You have not created any services yet.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
