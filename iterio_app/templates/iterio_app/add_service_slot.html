@@ -1,0 +1,14 @@
+{% extends 'main.html' %}
+
+{% load static %}
+{% load static tailwind_tags %}
+{% tailwind_css %}
+
+{% block content %}
+    <h2>Add Slot for {{ service.name }}</h2>
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="p-2 bg-blue-500 text-white rounded">Add Slot</button>
+    </form>
+{% endblock %}

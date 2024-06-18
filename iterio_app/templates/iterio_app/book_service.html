@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+{% load static %}
+{% load static tailwind_tags %}
+<html lang="en">
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Iterio</title>
+
+    <!-- Tailwind CSS -->
+    {% tailwind_css %}
+
+    <!-- Custom Styles -->
+    <style>
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .content {
+            flex: 1;
+        }
+
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        .info-container {
+            max-width: 2000px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: left;
+        }
+
+        .calendar-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 16px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .calendar {
+            max-height: 500px;
+            overflow: hidden;
+        }
+    </style>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- FullCalendar CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.css" />
+</head>
+<body class="font-sans text-gray-900 leading-normal antialiased bg-gray-100">
+    <!-- Navigation Bar -->
+    {% include 'navbar.html' %}
+
+    <!-- Content Section -->
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold mb-6">Book Service: {{ service.name }}</h1>
+        
+        <!-- Service Information -->
+        <div class="info-container mb-6">
+            <h2 class="text-2xl font-semibold mb-2">{{ service.name }}</h2>
+            <div class="mb-4 text-gray-700">{{ service.description|safe }}</div>
+            <p class="mb-2"><strong>Price Range:</strong> {{ service.price_range }}</p>
+            <p class="mb-2"><strong>Category:</strong> {{ service.category }}</p>
+            <p class="mb-2"><strong>Subcategory:</strong> {{ service.subcategory }}</p>
+            <p class="mb-2"><strong>Cities:</strong>
+                {% for city in service.cities.all %}
+                    {{ city.name }}{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            </p>
+            <p class="mb-2"><strong>Availability:</strong> {{ service.availability }}</p>
+            <p class="mb-2"><strong>Contact Phone:</strong> {{ service.contact_phone }}</p>
+            <p class="mb-2"><strong>Contact Email:</strong> {{ service.contact_email }}</p>
+            {% if service.picture %}
+                <img class="mt-4 w-full h-48 object-cover" src="{{ service.picture.url }}" alt="{{ service.name }} picture">
+            {% endif %}
+        </div>
+
+        <!-- Calendar -->
+        <div class="calendar-container">
+            <div id="calendar" class="calendar"></div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-8">
+        <div class="container mx-auto px-4">
+            <p class="text-center">&copy; 2024 Iterio. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- FullCalendar JS -->
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid@5.10.1/main.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/interaction@5.10.1/main.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var calendarEl = document.getElementById('calendar');
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                events: {
+                    url: "{% url 'service_slots' service.id %}",
+                    failure: function() {
+                        alert('There was an error while fetching events!');
+                    }
+                },
+                dateClick: function(info) {
+                    alert('Date: ' + info.dateStr);
+                    // Add your booking logic here
+                }
+            });
+            calendar.render();
+        });
+    </script>
+</body>
+</html>
