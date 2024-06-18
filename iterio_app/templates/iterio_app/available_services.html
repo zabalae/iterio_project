@@ -1,0 +1,75 @@
+{% extends 'main.html' %}
+
+{% load static %}
+{% load static tailwind_tags %}
+{% tailwind_css %}
+
+{% block content %}
+<br>
+<br>
+<section class="mb-16">
+    <div class="container mx-auto py-8">
+        <h1 class="text-4xl font-bold mb-4">Available Services for {{ subcategory.name }}</h1>
+        <!-- Searchbar -->
+        <form method="GET" action="" class="mb-8">
+            <input type="text" name="q" placeholder="Search by City" value="{{ request.GET.q }}" class="p-2 border rounded">
+            <button type="submit" class="p-2 bg-gray-300 text-black rounded">Search</button>
+        </form>
+        <div class="grid-cols-1 gap-6">
+            {% if not page_obj %}
+                <p>No services available at this time.</p>
+            {% else %}
+                {% for service in page_obj %}
+                    <div class="bg-white p-6 rounded-lg shadow-md hover:scale-105">
+                        <a href="{% url 'book_service' service.id %}">
+                            <h2 class="text-2xl font-semibold mb-2">{{ service.name }}</h2>
+                            <!-- <div class="mb-4 text-gray-700">{{ service.description|safe }}</div> -->
+                            <p class="mb-2"><strong>Price Range:</strong> {{ service.price_range }}</p>
+                            <!-- <p class="mb-2"><strong>Category:</strong> {{ service.category }}</p> -->
+                            <!-- <p class="mb-2"><strong>Subcategory:</strong> {{ service.subcategory }}</p> -->
+                            <p class="mb-2"><strong>Cities:</strong>
+                                {% for city in service.cities.all %}
+                                    {{ city.name }}{% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                            </p>
+                            <p class="mb-2"><strong>Availability:</strong> {{ service.availability }}</p>
+                            <!-- <p class="mb-2"><strong>Contact Phone:</strong> {{ service.contact_phone }}</p> -->
+                            <!-- <p class="mb-2"><strong>Contact Email:</strong> {{ service.contact_email }}</p> -->
+                            {% if service.picture %}
+                                <img class="mt-4 w-full h-48 object-cover" src="{{ service.picture.url }}" alt="{{ service.name }} picture">
+                            {% endif %}
+                        </a>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+        <!-- Pagination links -->
+        <div class="mt-8">
+            <span class="text-sm">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            </span>
+            <div class="inline-block">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1&q={{ query }}" class="text-sm text-gray-700 hover:text-gray-900">First</a>
+                    <a href="?page={{ page_obj.previous_page_number }}&q={{ query }}" class="text-sm text-gray-700 hover:text-gray-900">&laquo; Previous</a>
+                {% endif %}
+        
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                        <span class="text-sm text-gray-700 font-bold">{{ num }}</span>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <a href="?page={{ num }}&q={{ query }}" class="text-sm text-gray-700 hover:text-gray-900">{{ num }}</a>
+                    {% endif %}
+                {% endfor %}
+        
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}&q={{ query }}" class="text-sm text-gray-700 hover:text-gray-900">Next &raquo;</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}&q={{ query }}" class="text-sm text-gray-700 hover:text-gray-900">Last</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+            
+
+{% endblock %}
