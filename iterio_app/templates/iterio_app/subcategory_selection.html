@@ -1,0 +1,39 @@
+{% extends 'main.html' %}
+
+{% load static %}
+{% load static tailwind_tags %}
+{% tailwind_css %}
+
+{% block content %}
+<h1 class="text-center">Subcategory Selection</h1>
+<br>
+<nav class="bg-gray-300 dark:bg-gray-300">
+    <div class="max-w-screen-xl px-4 py-3 mx-auto scroll-container">
+        <div class="flex items-center scroll-content">
+            <ul class="font-medium mt-0 text-sm flex justify-evenly space-x-6 rtl:space-x-reverse overflow-x-auto whitespace-nowrap scrollbar">
+                {% for category in categories %}
+                <li class="nav-item">
+                    <a href="?category={{ category.id }}" class="text-gray-900 hover:text-gray-500">{{ category.name }}</a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</nav>
+<br>
+<br>
+<section class="mb-16">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <!-- Display All the services according to SubCategories -->
+        <h1 class="text-2xl font-bold col-span-full">Subcategories for {{ desired_category.name }}</h1>
+        {% for subcategory in subcategories %}
+            <div class="mb-6">
+                <a href="{% url 'available_services' desired_category.name subcategory.id %}" class="block bg-white p-4 rounded shadow hover:shadow-lg hover:scale-105">
+                    <h2 class="text-2xl font-semibold text-gray-700">{{ subcategory.name }}</h2>
+                </a>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+
+{% endblock %}
