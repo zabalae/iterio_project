@@ -259,7 +259,7 @@ def fitness_sport(request):
     }
     return render(request, 'iterio_app/services.html', context)
 
-def other(request):
+def other_services(request):
     other_services_category = get_object_or_404(Category, name='Other Services')
     subcategories = SubCategory.objects.filter(category=other_services_category)
 
