@@ -3,7 +3,7 @@ from django.contrib.auth.forms import UserCreationForm, UserChangeForm, SetPassw
 from django import forms
 from django.forms import SelectMultiple
 
-from .models import Profile, City, Service, Category, SubCategory
+from .models import Profile, City, Service, Category, SubCategory, Booking, ServiceSlot
 
 
 class UserInfoForm(forms.ModelForm):
@@ -128,3 +128,22 @@ class ServiceForm(forms.ModelForm):
                 pass  # Invalid input from the client; ignore and fallback to empty SubCategory queryset
         elif self.instance.pk:
             self.fields['subcategory'].queryset = self.instance.category.subcategories.order_by('name')
+
+
+class BookingForm(forms.ModelForm):
+    service_slot = forms.ModelChoiceField(queryset=ServiceSlot.objects.filter(is_booked=False))
+
+    class Meta:
+        model = Booking
+        fields = ['service_slot']
+
+
+class ServiceSlotForm(forms.ModelForm):
+    class Meta:
+        model = ServiceSlot
+        fields = ['date', 'start_time', 'end_time']
+        widgets = {
+            'date': forms.DateInput(attrs={'type': 'date'}),
+            'start_time': forms.TimeInput(attrs={'type': 'time'}),
+            'end_time': forms.TimeInput(attrs={'type': 'time'}),
+        }

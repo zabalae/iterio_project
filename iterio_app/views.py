@@ -3,9 +3,12 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
-from .forms import SignUpForm, UpdateUserForm, ChangePasswordForm, UserInfoForm, ServiceForm
+from .forms import SignUpForm, UpdateUserForm, ChangePasswordForm, UserInfoForm, ServiceForm, ServiceSlotForm, BookingForm
 from django import forms
-from .models import Profile, ServiceProvider, SubCategory, Category, City, Service
+from .models import Profile, ServiceProvider, SubCategory, Category, City, Service, ServiceSlot, Booking
+from django.core.paginator import Paginator
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
 
 
 # Create your views here.
@@ -159,112 +162,104 @@ def service_detail(request, pk):
     service = get_object_or_404(Service, pk=pk)
     return render(request, 'iterio_app/service_detail.html', {'service': service})
 
-def home_services(request):
-    home_services_category = get_object_or_404(Category, name='Home Services')
-    subcategories = SubCategory.objects.filter(category=home_services_category)
+def subcategory_selection(request, category):
+    # Get all categories for the navbar
+    categories = Category.objects.all()
+
+    # Get the selected category_id from the GET parameters
+    category_id = request.GET.get('category')
+
+    # Initialize subcategories and desired_category
+    subcategories = SubCategory.objects.none()
+    desired_category = None
+
+    if category_id:
+        try:
+            category_id = int(category_id)
+            desired_category = get_object_or_404(Category, id=category_id)
+            subcategories = SubCategory.objects.filter(category=desired_category)
+        except (ValueError, Category.DoesNotExist):
+            pass
 
     context = {
-        'subcategories': subcategories, 
-        'desired_category': home_services_category
+        'categories': categories,
+        'subcategories': subcategories,
+        'desired_category': desired_category,
     }
-    return render(request, 'iterio_app/services.html', context)
+    return render(request, 'iterio_app/subcategory_selection.html', context)
 
-def automotive_services(request):
-    automotive_services_category = get_object_or_404(Category, name='Automotive Services')
-    subcategories = SubCategory.objects.filter(category=automotive_services_category)
+def available_services(request, desired_category, subcategory_id):
+    subcategory = get_object_or_404(SubCategory, id=subcategory_id)
+    services = subcategory.services.all()
+
+    # Search function
+    query = request.GET.get('q')
+    if query:
+        services = services.filter(cities__name__icontains=query).distinct()
+
+    # Pagination logic
+    paginator = Paginator(services, 5) # Show 5 services per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
 
     context = {
-        'subcategories': subcategories, 
-        'desired_category': automotive_services_category
+        'services': services,
+        'subcategory': subcategory,
+        'page_obj': page_obj,
+        'query': query
     }
-    return render(request, 'iterio_app/services.html', context)
+    return render(request, 'iterio_app/available_services.html', context)
 
-def health_wellness(request):
-    health_wellness_services_category = get_object_or_404(Category, name='Health & Wellness Services')
-    subcategories = SubCategory.objects.filter(category=health_wellness_services_category)
+def service_slots(request, service_id):
+    service = get_object_or_404(Service, id=service_id)
+    slots = ServiceSlot.objects.filter(service=service, is_booked=False).order_by('date', 'start_time')
+    slots_data = [{
+        'id': slot.id,
+        'date': slot.date,
+        'start_time': slot.start_time,
+        'end_time': slot.end_time
+    } for slot in slots]
+    return JsonResponse(slots_data, safe=False)
+
+@login_required
+def add_service_slot(request, service_id):
+    service = get_object_or_404(Service, id=service_id)
+    if request.method == 'POST':
+        form = ServiceSlotForm(request.POST)
+        if form.is_valid():
+            slot = form.save(commit=False)
+            slot.service = service
+            slot.save()
+            return redirect('service_detail', service_id=service.id)  # Redirect to the service detail page or wherever appropriate
+    else:
+        form = ServiceSlotForm()
 
     context = {
-        'subcategories': subcategories, 
-        'desired_category': health_wellness_services_category
+        'service': service,
+        'form': form,
     }
-    return render(request, 'iterio_app/services.html', context)
+    return render(request, 'iterio_app/add_service_slot.html', context)
 
-def beauty_grooming(request):
-    beauty_grooming_services_category = get_object_or_404(Category, name='Beauty & Grooming Services')
-    subcategories = SubCategory.objects.filter(category=beauty_grooming_services_category)
+@login_required
+def book_service(request, service_id):
+    service = get_object_or_404(Service, id=service_id)
+    if request.method == 'POST':
+        form = BookingForm(request.POST)
+        if form.is_valid():
+            booking = form.save(commit=False)
+            booking.user = request.user
+            booking.service_slot.is_booked = True
+            booking.service_slot.save()
+            booking.save()
+            return redirect('booking_success')
+    else:
+        form = BookingForm()
 
     context = {
-        'subcategories': subcategories, 
-        'desired_category': beauty_grooming_services_category
+        'service': service,
+        'form': form,
     }
-    return render(request, 'iterio_app/services.html', context)
+    return render(request, 'iterio_app/book_service.html', context)
 
-def cleaning_services(request):
-    cleaning_services_category = get_object_or_404(Category, name='Cleaning Services')
-    subcategories = SubCategory.objects.filter(category=cleaning_services_category)
-
-    context = {
-        'subcategories': subcategories, 
-        'desired_category': cleaning_services_category
-    }
-    return render(request, 'iterio_app/services.html', context)
-
-def event_services(request):
-    event_services_category = get_object_or_404(Category, name='Event Services')
-    subcategories = SubCategory.objects.filter(category=event_services_category)
-
-    context = {
-        'subcategories': subcategories, 
-        'desired_category': event_services_category
-    }
-    return render(request, 'iterio_app/services.html', context)
-
-def technology_services(request):
-    technology_services_category = get_object_or_404(Category, name='Technology Services')
-    subcategories = SubCategory.objects.filter(category=technology_services_category)
-
-    context = {
-        'subcategories': subcategories, 
-        'desired_category': technology_services_category
-    }
-    return render(request, 'iterio_app/services.html', context)
-
-def pet_services(request):
-    pet_services_category = get_object_or_404(Category, name='Pet Services')
-    subcategories = SubCategory.objects.filter(category=pet_services_category)
-
-    context = {
-        'subcategories': subcategories, 
-        'desired_category': pet_services_category
-    }
-    return render(request, 'iterio_app/services.html', context)
-
-def education_tutoring(request):
-    education_tutoring_services_category = get_object_or_404(Category, name='Education & Tutoring Services')
-    subcategories = SubCategory.objects.filter(category=education_tutoring_services_category)
-
-    context = {
-        'subcategories': subcategories, 
-        'desired_category': education_tutoring_services_category
-    }
-    return render(request, 'iterio_app/services.html', context)
-
-def fitness_sport(request):
-    fitness_sport_services_category = get_object_or_404(Category, name='Fitness & Sport Services')
-    subcategories = SubCategory.objects.filter(category=fitness_sport_services_category)
-
-    context = {
-        'subcategories': subcategories, 
-        'desired_category': fitness_sport_services_category
-    }
-    return render(request, 'iterio_app/services.html', context)
-
-def other_services(request):
-    other_services_category = get_object_or_404(Category, name='Other Services')
-    subcategories = SubCategory.objects.filter(category=other_services_category)
-
-    context = {
-        'subcategories': subcategories, 
-        'desired_category': other_services_category
-    }
-    return render(request, 'iterio_app/services.html', context)
+def booking_success(request):
+    return render(request, 'iterio_app/booking_success.html')
