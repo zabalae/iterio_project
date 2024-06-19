@@ -9,6 +9,8 @@ from .models import Profile, ServiceProvider, SubCategory, Category, City, Servi
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
+from django.urls import reverse
+from django.http import HttpResponseRedirect
 
 
 # Create your views here.
@@ -161,6 +163,40 @@ def my_services(request):
 def service_detail(request, pk):
     service = get_object_or_404(Service, pk=pk)
     return render(request, 'iterio_app/service_detail.html', {'service': service})
+
+
+def update_service(request, service_id):
+    service = get_object_or_404(Service, id=service_id)
+    subcategories = SubCategory.objects.filter(category=service.category)
+
+    if request.method == 'POST':
+        form = ServiceForm(request.POST, request.FILES, instance=service)
+        if form.is_valid():
+            form.save()
+            return redirect('my_services')
+    else:
+        form = ServiceForm(instance=service)
+
+    context = {
+        'form': form,
+        'service': service,
+        'categories': Category.objects.all(),
+        'subcategories': subcategories,
+        'cities': City.objects.all()
+    }
+    return render(request, 'iterio_app/update_service.html', context)
+
+
+def delete_service(request, service_id):
+    service = get_object_or_404(Service, id=service_id)
+    if request.method == 'POST':
+        service.delete()
+        return redirect('my_services')
+
+    context = {
+        'service': service,
+    }
+    return render(request, 'iterio_app/delete_service.html', context)
 
 def subcategory_selection(request, category):
     # Get all categories for the navbar
