@@ -11,7 +11,8 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.urls import reverse
 from django.http import HttpResponseRedirect
-
+import asyncio
+from mailer import connection
 
 # Create your views here.
 
@@ -54,6 +55,8 @@ def registerUser(request):
             form.save()
             username = form.cleaned_data['username']
             password = form.cleaned_data['password1']
+            user_email = form.cleaned_data['email']
+            asyncio.run(connection.welcome_msg(username, user_email))
             user = authenticate(username=username, password=password)
             login(request, user)
             messages.success(request, ("Username Created - Please Fill Out Your User Info Below..."))
@@ -91,7 +94,7 @@ def update_user(request):
                     ServiceProvider.objects.filter(user=current_user).delete()
 
                 login(request, current_user)
-                return redirect('home')
+                return redirect('profile')
         else:
             user_form = UpdateUserForm(instance=current_user)
             user_info_form = UserInfoForm(instance=current_profile)
