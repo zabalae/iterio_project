@@ -1,0 +1,56 @@
+{% extends 'main.html' %}
+
+{% block content %}
+<div class="bg-gray-100 min-h-screen flex items-center justify-center">
+    <div class="max-w-md w-full bg-white p-8 rounded-lg shadow-lg">
+        <h1 class="text-3xl font-bold text-gray-900 mb-6 text-center">Deleting Profile</h1>
+        <p class="text-sm text-gray-900 mb-4 text-center">This will permanently remove your profile from Iterio</p>
+        <form id="delete-profile-form" method="post">
+            {% csrf_token %}
+            <div class="mb-4 text-center">
+                {% if Incorrect %}
+                    <p id="invalid_passcode" class="text-red-600 text-xs italic font-bold opacity-0">Incorrect password. Please try again.</p>
+                {% endif %}
+                <label for="id_password" class="block text-gray-700 text-ls font-bold mb-2">Password</label>
+                {{ form.password }}
+            </div>
+            <div class="flex justify-between">
+                <button type="submit" class="py-2 px-4 bg-red-600 text-white font-semibold rounded-md shadow-sm hover:bg-red-800 focus:outline-none focus:ring-offset-2 focus:ring-red-500">Confirm</button>
+                <a href="{% url 'profile' %}" class="px-4 py-2 bg-gray-300 text-gray-900 rounded-md hover:bg-gray-400 focus:outline-none hover:bg-gray-500">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    @keyframes fadeInOut {
+        0% { opacity: 0; }
+        50% { opacity: 1; }
+        100% { opacity: 0; }
+    }
+
+    .opacity-0 {
+        opacity: 0;
+        animation: fadeInOut 4s ease-in-out; /* ajusta la duracion de la animacion */
+    }
+</style>
+
+<script>
+    function triggerAnimationAndRemove() {
+        var invalidPasscode = document.getElementById('invalid_passcode');
+        if (invalidPasscode) {
+            invalidPasscode.classList.remove('opacity-0');
+            invalidPasscode.classList.add('opacity-0');
+            setTimeout(function() {
+                invalidPasscode.remove();
+            }, 4000); // ajusta cuando se borra el mensaje de passcode incorrecto (1000 = 1s)
+        }
+    }
+
+    window.onload = function() {
+        setTimeout(function() {
+            triggerAnimationAndRemove();
+        }, 100);
+    };
+</script>
+{% endblock %}
