@@ -1,0 +1,139 @@
+{% extends 'main.html' %}
+
+{% load static %}
+{% load static tailwind_tags %}
+{% tailwind_css %}
+
+{% block content %}
+<div class="bg-gray-100 min-h-screen flex items-center justify-center">
+    <div class="max-w-lg w-full bg-white p-8 rounded-lg shadow-lg">
+        <h1 class="text-3xl font-bold text-gray-900 mb-6 text-center">Update Service</h1>
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="space-y-4">
+                <!-- Name -->
+                <div>
+                    <label for="name" class="block text-sm font-medium text-gray-700">Service Name</label>
+                    <input type="text" name="name" id="name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" value="{{ form.name.value }}">
+                </div>
+
+                <!-- Picture -->
+                <div>
+                    <label for="picture" class="block text-sm font-medium text-gray-700">Picture (Optional)</label>
+                    <input type="file" name="picture" id="picture" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    {% if form.picture.value %}
+                        <img src="{{ form.picture.value.url }}" alt="Service Picture" class="w-full h-32 object-cover mt-4 rounded-md">
+                    {% endif %}
+                </div>
+
+                <!-- Description -->
+                <div>
+                    <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
+                    <textarea name="description" id="description" rows="4" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">{{ form.description.value }}</textarea>
+                </div>
+
+                <!-- Price Range -->
+                <div>
+                    <label for="price_range" class="block text-sm font-medium text-gray-700">Price Range</label>
+                    <input type="text" name="price_range" id="price_range" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" value="{{ form.price_range.value }}">
+                </div>
+
+                <!-- Category -->
+                <div>
+                    <label for="category" class="block text-sm font-medium text-gray-700">Category</label>
+                    <select name="category" id="category" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" onchange="fetchSubcategories()">
+                        <option value="" disabled>Select a category</option>
+                        {% for category in categories %}
+                            <option value="{{ category.id }}" {% if category.id == form.category.value %}selected{% endif %}>{{ category.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Subcategory -->
+                <div>
+                    <label for="subcategory" class="block text-sm font-medium text-gray-700">Subcategory</label>
+                    <select name="subcategory" id="subcategory" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        <option value="" disabled>Select a subcategory</option>
+                        {% for subcategory in subcategories %}
+                            <option value="{{ subcategory.id }}" {% if subcategory.id == form.subcategory.value %}selected{% endif %}>{{ subcategory.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Cities -->
+                <div>
+                    <label for="cities" class="block text-sm font-medium text-gray-700">Cities</label>
+                    <select name="cities" id="cities" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" multiple="multiple">
+                        {% for city in cities %}
+                            <option value="{{ city.id }}" {% if city.id in form.cities.value %}selected{% endif %}>{{ city.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Availability -->
+                <div>
+                    <label for="availability" class="block text-sm font-medium text-gray-700">Availability</label>
+                    <textarea name="availability" id="availability" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">{{ form.availability.value }}</textarea>
+                </div>
+
+                <!-- Contact Info -->
+                <div>
+                    <label for="contact_info" class="block text-sm font-medium text-gray-700">Contact Information</label>
+                    <textarea name="contact_info" id="contact_info" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">{{ form.contact_info.value }}</textarea>
+                </div>
+
+            </div>
+
+            <!-- Submit Button -->
+            <div class="mt-8">
+                <button type="submit" class="w-full py-2 px-4 bg-gray-900 text-white font-semibold rounded-md shadow-sm hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Update Service</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Include Choices.js CSS and JS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+
+<!-- Include TinyMCE -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/5.10.2/tinymce.min.js" referrerpolicy="origin"></script>
+
+<script>
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const citiesSelect = document.getElementById('cities');
+        const choices = new Choices(citiesSelect, {
+            removeItemButton: true,
+            maxItemCount: 100,
+            searchResultLimit: 100,
+            renderChoiceLimit: 100
+        });
+
+        // Initialize TinyMCE
+        tinymce.init({
+            selector: 'textarea[name=description]',  // change this value according to your HTML
+            menubar: false,
+            plugins: [
+                'advlist autolink lists link image charmap print preview anchor',
+                'searchreplace visualblocks code fullscreen',
+                'insertdatetime media table paste code help wordcount'
+            ],
+            toolbar: 'undo redo | formatselect | bold italic backcolor | \
+                      alignleft aligncenter alignright alignjustify | \
+                      bullist numlist outdent indent | removeformat | help'
+        });
+    });
+
+    function fetchSubcategories() {
+        const categoryId = document.getElementById('category').value;
+        const subcategorySelect = document.getElementById('subcategory');
+
+        fetch(`/ajax/load-subcategories/?category=${categoryId}`)
+            .then(response => response.text())
+            .then(data => {
+                subcategorySelect.innerHTML = data;
+            });
+    }
+</script>
+{% endblock %}
