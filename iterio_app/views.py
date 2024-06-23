@@ -3,7 +3,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
-from .forms import SignUpForm, UpdateUserForm, ChangePasswordForm, UserInfoForm, ServiceForm, ServiceSlotForm, BookingForm
+from .forms import SignUpForm, UpdateUserForm, ChangePasswordForm, UserInfoForm, ServiceForm, ServiceSlotForm, BookingForm, DeleteProfileForm
 from django import forms
 from .models import Profile, ServiceProvider, SubCategory, Category, City, Service, ServiceSlot, Booking
 from django.core.paginator import Paginator
@@ -56,7 +56,7 @@ def registerUser(request):
             username = form.cleaned_data['username']
             password = form.cleaned_data['password1']
             user_email = form.cleaned_data['email']
-            asyncio.run(connection.welcome_msg(username, user_email))
+            #asyncio.run(connection.welcome_msg(username, user_email))
             user = authenticate(username=username, password=password)
             login(request, user)
             messages.success(request, ("Username Created - Please Fill Out Your User Info Below..."))
@@ -124,6 +124,35 @@ def update_password(request):
         else:
             form = ChangePasswordForm(current_user)
             return render(request, 'iterio_app/update_password.html', {'form':form})
+
+@login_required
+def delete_profile(request):
+    user = request.user
+    if request.method == 'POST':
+        form = DeleteProfileForm(request.POST)
+        if form.is_valid():
+            password = form.cleaned_data['password']
+            if user.check_password(password):
+                print("#" * 55)
+                try:
+                    service_provider = ServiceProvider.objects.get(user=user)
+                    services = service_provider.services.all()
+                    for service in services:
+                        print(f"#\tDeleted Service --> {str(service)}")
+                        service.delete()
+                except:
+                    print("#\n#\n#\t---> No Services found To Delete <---\n#\n#")
+                print(f"#\tDELETED PROFILE:\n#\t\t{str(user.username)}")
+                print("#" * 55)
+                user.delete()
+                messages.success(request, 'Your profile has been deleted.')
+                return redirect('home')
+            else:
+                form.add_error('password', '<p class="text-red-500 text-xs italic font-bold"> Incorrect password. Please try again. </p>')
+                return render(request, 'iterio_app/delete_profile.html', {'form': form, 'Incorrect': True})
+    else:
+        form = DeleteProfileForm()
+    return render(request, 'iterio_app/delete_profile.html', {'form': form})
 
 
 def load_subcategories(request):
