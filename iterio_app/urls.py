@@ -16,6 +16,7 @@ urlpatterns = [
     path('delete_service/<int:service_id>/', views.delete_service, name='delete_service'),
     path('my-services/', views.my_services, name='my_services'),
     path('service/<int:pk>/', views.service_detail, name='service_detail'),
+    path('delete_profile/', views.delete_profile, name="delete_profile"),
     path('<str:category>/', views.subcategory_selection, name='subcategory_selection'),
     path('<str:desired_category>/<int:subcategory_id>/', views.available_services, name='available_services'),
     path('services/<int:service_id>/book/', views.book_service, name='book_service'),
