@@ -114,11 +114,12 @@
         transition: opacity 0.3s ease, transform 0.3s ease;
     }
 
-    .hidden-button {
-        opacity: 0;
-        transform: translateY(-10px);
-        transition: opacity 0.3s ease, transform 0.3s ease;
-    }
+    .hidden-buttons {
+    opacity: 0;
+    max-height: 0;
+    visibility: hidden;
+    transition: max-height 0.3s ease, opacity 0.3s ease, visibility 0.3s ease;
+}
 
     .modal-opened #main-content {
         opacity: 0.5;
@@ -133,37 +134,25 @@
 
 <script>
     function toggleDropdown() {
-        var hiddenButtons = document.getElementById('hidden-buttons');
-        var isHidden = hiddenButtons.clientHeight === 0;
+    var hiddenButtons = document.getElementById('hidden-buttons');
+    var isHidden = hiddenButtons.style.visibility === 'hidden' || hiddenButtons.style.visibility === '';
 
-        if (isHidden) {
-            hiddenButtons.style.visibility = 'visible';
-            hiddenButtons.style.maxHeight = hiddenButtons.scrollHeight + 'px';
-            setTimeout(function() {
-                var buttons = hiddenButtons.querySelectorAll('.hidden-button');
-                buttons.forEach(function(button, index) {
-                    setTimeout(function() {
-                        button.style.opacity = '1';
-                        button.style.transform = 'translateY(0)';
-                    }, index * 50);
-                });
-            }, 50);
-        } else {
-            var buttons = hiddenButtons.querySelectorAll('.hidden-button');
-            buttons.forEach(function(button) {
-                button.style.opacity = '0';
-                button.style.transform = 'translateY(-10px)';
-            });
-            setTimeout(function() {
-                hiddenButtons.style.maxHeight = '0';
-                hiddenButtons.style.visibility = 'hidden';
-            }, 300);
-        }
+    if (isHidden) {
+        hiddenButtons.style.visibility = 'visible';
+        hiddenButtons.style.maxHeight = hiddenButtons.scrollHeight + 'px';
+        hiddenButtons.style.opacity = '1';
+    } else {
+        hiddenButtons.style.opacity = '0';
+        hiddenButtons.style.maxHeight = '0';
+        setTimeout(function() {
+            hiddenButtons.style.visibility = 'hidden';
+        }, 300);
     }
+}
 
-    document.getElementById('options-button').addEventListener('click', function() {
-        toggleDropdown();
-    });
+document.getElementById('options-button').addEventListener('click', function() {
+    toggleDropdown();
+});
 
     document.getElementById('delete-profile-button').addEventListener('click', function() {
         showConfirmationModal();
