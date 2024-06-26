@@ -3,7 +3,7 @@ from django.contrib.auth.forms import UserCreationForm, UserChangeForm, SetPassw
 from django import forms
 from django.forms import SelectMultiple
 
-from .models import Profile, City, Service, Category, SubCategory, Booking, ServiceSlot
+from .models import Profile, City, Service, Category, SubCategory, Booking, TimeSlot
 
 
 class UserInfoForm(forms.ModelForm):
@@ -131,16 +131,16 @@ class ServiceForm(forms.ModelForm):
 
 
 class BookingForm(forms.ModelForm):
-    service_slot = forms.ModelChoiceField(queryset=ServiceSlot.objects.filter(is_booked=False))
+    service_slot = forms.ModelChoiceField(queryset=TimeSlot.objects.filter(is_booked=False))
 
     class Meta:
         model = Booking
         fields = ['service_slot']
 
 
-class ServiceSlotForm(forms.ModelForm):
+class TimeSlotForm(forms.ModelForm):
     class Meta:
-        model = ServiceSlot
+        model = TimeSlot
         fields = ['date', 'start_time', 'end_time']
         widgets = {
             'date': forms.DateInput(attrs={'type': 'date'}),
