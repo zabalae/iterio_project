@@ -10,7 +10,6 @@
     <!-- Tailwind CSS -->
     {% tailwind_css %}
 
-    <!-- Custom Styles -->
     <style>
         html, body {
             height: 100%;
@@ -57,6 +56,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- FullCalendar CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.css" />
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
 </head>
 <body class="font-sans text-gray-900 leading-normal antialiased bg-gray-100">
     <!-- Navigation Bar -->
@@ -79,11 +82,17 @@
                 {% endfor %}
             </p>
             <p class="mb-2"><strong>Availability:</strong> {{ service.availability }}</p>
-            <p class="mb-2"><strong>Contact Phone:</strong> {{ service.contact_phone }}</p>
-            <p class="mb-2"><strong>Contact Email:</strong> {{ service.contact_email }}</p>
+            <p class="mb-2"><strong>Contact Information:</strong> {{ service.contact_info }}</p>
             {% if service.picture %}
                 <img class="mt-4 w-full h-48 object-cover" src="{{ service.picture.url }}" alt="{{ service.name }} picture">
             {% endif %}
+            {% for provider in service.providers.all %}
+                <p class="mb-2">
+                    <a class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" href="{% url 'service_provider_profile' provider.id %}">
+                    More about {{ provider.user.username }}
+                    </a>
+                </p>
+            {% endfor %}
         </div>
 
         <!-- Calendar -->
@@ -101,22 +110,62 @@
 
     <!-- FullCalendar JS -->
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid@5.10.1/main.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/timegrid@5.10.1/main.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/interaction@5.10.1/main.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             var calendarEl = document.getElementById('calendar');
             var calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'dayGridMonth',
+                initialView: 'timeGridWeek',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'timeGridWeek,timeGridDay'
+                },
+                validRange: {
+                    start: new Date().toISOString().split('T')[0]
+                },
                 events: {
                     url: "{% url 'service_slots' service.id %}",
                     failure: function() {
                         alert('There was an error while fetching events!');
                     }
                 },
+                eventClick: function(info) {
+                    Swal.fire({
+                        title: 'Do you want to book this timeslot?',
+                        html: '<p><strong>Date:</strong> ' + info.event.start.toLocaleDateString() + '</p>' +
+                              '<p><strong>Start Time:</strong> ' + info.event.start.toLocaleTimeString() + '</p>' +
+                              '<p><strong>End Time:</strong> ' + info.event.end.toLocaleTimeString() + '</p>',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Yes, book it!'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            console.log('Booking timeslot', info.event.id); // Debug log
+                            $.ajax({
+                                url: "{% url 'book_timeslot' service.id %}",
+                                method: 'POST',
+                                data: {
+                                    timeslot_id: info.event.id,
+                                    csrfmiddlewaretoken: '{{ csrf_token }}'
+                                },
+                                success: function(response) {
+                                    console.log('Booking successful', response);
+                                    Swal.fire('Booked!', 'Your timeslot has been booked.', 'success');
+                                },
+                                error: function(response) {
+                                    console.log('Booking failed', response);
+                                    Swal.fire('Error!', 'There was an error booking the timeslot.', 'error');
+                                }
+                            });
+                        }
+                    });
+                },
                 dateClick: function(info) {
                     alert('Date: ' + info.dateStr);
-                    // Add your booking logic here
                 }
             });
             calendar.render();

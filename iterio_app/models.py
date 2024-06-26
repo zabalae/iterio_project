@@ -101,8 +101,8 @@ class ServiceProvider(models.Model):
 
 #     def __str__(self):
 #         return f"Booking by {self.user.username} for {self.service.name} with {self.provider.user.username}"
-class ServiceSlot(models.Model):
-    service = models.ForeignKey(Service, on_delete=models.CASCADE, related_name='slots')
+class TimeSlot(models.Model):
+    service = models.ForeignKey(Service, on_delete=models.CASCADE, related_name='time_slot_service')
     date = models.DateField()
     start_time = models.TimeField()
     end_time = models.TimeField()
@@ -114,9 +114,9 @@ class ServiceSlot(models.Model):
 
 class Booking(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    service_slot = models.ForeignKey(ServiceSlot, on_delete=models.CASCADE, related_name='bookings', default=1)
+    time_slot = models.ForeignKey(TimeSlot, on_delete=models.CASCADE, related_name='bookings', default=1)
     created_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
-        return f"Booking by {self.user.username} for {self.service_slot.service.name} on {self.service_slot.date} at {self.service_slot.start_time}"
+        return f"Booking by {self.user.username} for {self.time_slot.service.name} on {self.time_slot.date} at {self.time_slot.start_time}"
     

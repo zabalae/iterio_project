@@ -1,0 +1,41 @@
+{% extends 'main.html' %}
+
+{% load static %}
+{% load static tailwind_tags %}
+{% tailwind_css %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-6">My Bookings</h1>
+    
+    <!-- Booked Timeslots -->
+    <div class="info-container">
+        {% if bookings %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Start Time</th>
+                        <th>End Time</th>
+                        <th>Service</th>
+                        <th>Provider</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for booking in bookings %}
+                    <tr>
+                        <td>{{ booking.timeslot.date }}</td>
+                        <td>{{ booking.timeslot.start_time }}</td>
+                        <td>{{ booking.timeslot.end_time }}</td>
+                        <td>{{ booking.timeslot.service.name }}</td>
+                        <td>{{ booking.timeslot.service.providers.all.0.user.username }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>You have no bookings.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

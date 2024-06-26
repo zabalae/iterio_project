@@ -20,26 +20,37 @@
                 <p>No services available at this time.</p>
             {% else %}
                 {% for service in page_obj %}
-                    <div class="bg-white p-6 rounded-lg shadow-md hover:scale-105">
+                <div class="bg-white p-6 rounded-lg shadow-md hover:scale-105">
+                    {% if user.is_authenticated %}
                         <a href="{% url 'book_service' service.id %}">
                             <h2 class="text-2xl font-semibold mb-2">{{ service.name }}</h2>
-                            <!-- <div class="mb-4 text-gray-700">{{ service.description|safe }}</div> -->
                             <p class="mb-2"><strong>Price Range:</strong> {{ service.price_range }}</p>
-                            <!-- <p class="mb-2"><strong>Category:</strong> {{ service.category }}</p> -->
-                            <!-- <p class="mb-2"><strong>Subcategory:</strong> {{ service.subcategory }}</p> -->
                             <p class="mb-2"><strong>Cities:</strong>
                                 {% for city in service.cities.all %}
                                     {{ city.name }}{% if not forloop.last %}, {% endif %}
                                 {% endfor %}
                             </p>
                             <p class="mb-2"><strong>Availability:</strong> {{ service.availability }}</p>
-                            <!-- <p class="mb-2"><strong>Contact Phone:</strong> {{ service.contact_phone }}</p> -->
-                            <!-- <p class="mb-2"><strong>Contact Email:</strong> {{ service.contact_email }}</p> -->
                             {% if service.picture %}
                                 <img class="mt-4 w-full h-48 object-cover" src="{{ service.picture.url }}" alt="{{ service.name }} picture">
                             {% endif %}
                         </a>
-                    </div>
+                    {% else %}
+                        <a href="{% url 'register' %}">
+                            <h2 class="text-2xl font-semibold mb-2">{{ service.name }}</h2>
+                            <p class="mb-2"><strong>Price Range:</strong> {{ service.price_range }}</p>
+                            <p class="mb-2"><strong>Cities:</strong>
+                                {% for city in service.cities.all %}
+                                    {{ city.name }}{% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                            </p>
+                            <p class="mb-2"><strong>Availability:</strong> {{ service.availability }}</p>
+                            {% if service.picture %}
+                                <img class="mt-4 w-full h-48 object-cover" src="{{ service.picture.url }}" alt="{{ service.name }} picture">
+                            {% endif %}
+                        </a>
+                    {% endif %}
+                </div>
                 {% endfor %}
             {% endif %}
         </div>
@@ -73,3 +84,4 @@
             
 
 {% endblock %}
+

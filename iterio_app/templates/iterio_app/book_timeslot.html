@@ -1,0 +1,21 @@
+{% extends 'main.html' %}
+
+{% load static %}
+{% load static tailwind_tags %}
+{% tailwind_css %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-6">Confirm Booking</h1>
+    
+    <p>Service: {{ service.name }}</p>
+    <p>Date: {{ timeslot.date }}</p>
+    <p>Start Time: {{ timeslot.start_time }}</p>
+    <p>End Time: {{ timeslot.end_time }}</p>
+    
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Confirm Booking</button>
+    </form>
+</div>
+{% endblock %}
