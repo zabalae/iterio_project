@@ -20,7 +20,7 @@
             <div class="space-y-4">
                 <!-- Username -->
                 <div>
-                    <label for="{{ form.username.id_for_label }}" class="block text-sm font-medium text-gray-700">Username</label>
+                    <label for="{{ form.username.id_for_label }}" class="block text-sm font-medium text-gray-700">Username<span class="text-red-500">*</span></label>
                     {{ form.username }}
                     {% if invalid_username %}
                         <p class="text-red-600 text-sm">Oops! This username is already in use.</p>
@@ -29,7 +29,7 @@
 
                 <!-- Email -->
                 <div>
-                    <label for="{{ form.email.id_for_label }}" class="block text-sm font-medium text-gray-700">Email Address</label>
+                    <label for="{{ form.email.id_for_label }}" class="block text-sm font-medium text-gray-700">Email Address<span class="text-red-500">*</span></label>
                     {{ form.email }}
                     {% if invalid_email %}
                         <p class="text-red-600 text-sm">Oops! This email is already registered.</p>
