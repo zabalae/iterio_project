@@ -12,7 +12,6 @@ from django.http import JsonResponse
 from django.urls import reverse
 from django.http import HttpResponseRedirect
 import asyncio
-import time
 from mailer import connection
 import datetime
 from django.views.decorators.http import require_POST
@@ -64,7 +63,7 @@ def registerUser(request):
             username = form.cleaned_data['username']
             password = form.cleaned_data['password1']
             user_email = form.cleaned_data['email']
-            asyncio.run(connection.welcome_msg(username, user_email))
+            #asyncio.run(connection.welcome_msg(username, user_email))
             user = authenticate(username=username, password=password)
             login(request, user)
             messages.success(request, ("Username Created - Please Fill Out Your User Info Below..."))
