@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.models import User
-from django.contrib.auth.forms import UserCreationForm, UserChangeForm
+from django.contrib.auth.forms import UserCreationForm, UserChangeForm, AuthenticationForm
 from .forms import SignUpForm, UpdateUserForm, ChangePasswordForm, UserInfoForm, ServiceForm, TimeSlotForm, BookingForm, DeleteProfileForm
 from django import forms
 from .models import Profile, ServiceProvider, SubCategory, Category, City, Service, TimeSlot, Booking
@@ -30,19 +30,21 @@ def aboutUs(request):
     return render(request, 'iterio_app/aboutUs.html')
 
 def loginPage(request):
-    if request.method == "POST":
-        username = request.POST['username']
-        password = request.POST['password']
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            login(request, user)
-            messages.success(request, 'You are now logged in')
-            return redirect('home')
-        else:
-            messages.success(request, 'Invalid username or password')
-            return redirect('login')
+    if request.method == 'POST':
+        form = AuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+            user = authenticate(request, username=username, password=password)
+            if user is not None:
+                login(request, user)
+                return redirect('home')
+            else:
+                form.add_error(None, 'Invalid username or password')
     else:
-        return render(request, 'iterio_app/loginPage.html')
+        form = AuthenticationForm()
+
+    return render(request, 'iterio_app/loginPage.html', {'form': form})
 
 def logoutUser(request):
     logout(request)
