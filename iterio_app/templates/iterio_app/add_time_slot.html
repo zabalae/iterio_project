@@ -1,0 +1,36 @@
+{% extends 'main.html' %}
+
+{% load static %}
+{% load static tailwind_tags %}
+{% tailwind_css %}
+
+{% block content %}
+<body class="font-sans text-gray-900 bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold mb-6">{{ service.name }} - Create Time Slot</h1>
+        
+        <form method="post">
+            {% csrf_token %}
+            <div class="bg-white shadow-md rounded-lg p-6">
+                <div class="mb-4">
+                    <label for="date" class="block text-gray-700 text-sm font-bold mb-2">Date:</label>
+                    {{ form.date }}
+                </div>
+                <div class="mb-4">
+                    <label for="start_time" class="block text-gray-700 text-sm font-bold mb-2">Start Time:</label>
+                    {{ form.start_time }}
+                </div>
+                <div class="mb-4">
+                    <label for="end_time" class="block text-gray-700 text-sm font-bold mb-2">End Time:</label>
+                    {{ form.end_time }}
+                </div>
+                <div class="flex items-center justify-between">
+                    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                        Add Time Slot
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</body>
+{% endblock %}
