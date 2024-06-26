@@ -12,6 +12,7 @@ from django.http import JsonResponse
 from django.urls import reverse
 from django.http import HttpResponseRedirect
 import asyncio
+import time
 from mailer import connection
 
 # Create your views here.
@@ -49,24 +50,33 @@ def logoutUser(request):
 
 
 def registerUser(request):
+    users = User.objects.all()
+    form = SignUpForm(request.POST)
+    all_emails = []
+    context = {'form': form}
+    for user in users:
+        all_emails.append(user.email)
     if request.method == 'POST':
-        form = SignUpForm(request.POST)
-        if form.is_valid():
+        if form.is_valid() and form.cleaned_data['email'] not in all_emails:
             form.save()
             username = form.cleaned_data['username']
             password = form.cleaned_data['password1']
             user_email = form.cleaned_data['email']
-            #asyncio.run(connection.welcome_msg(username, user_email))
+            asyncio.run(connection.welcome_msg(username, user_email))
             user = authenticate(username=username, password=password)
             login(request, user)
             messages.success(request, ("Username Created - Please Fill Out Your User Info Below..."))
             return redirect('update_user')
         else:
+            if not form.cleaned_data['username']:
+                context["invalid_username"] = True
+            if form.cleaned_data['email'] in all_emails:
+                context['invalid_email'] = True
             messages.success(request, ("Please try again..."))
-            return redirect('register')
+            return render(request, 'iterio_app/register.html', context)
     else:
         form = SignUpForm()
-    context = {'form': form}
+    all_emails = []
     return render(request, 'iterio_app/register.html', context)
 
 def profile(request):
@@ -148,7 +158,6 @@ def delete_profile(request):
                 messages.success(request, 'Your profile has been deleted.')
                 return redirect('home')
             else:
-                form.add_error('password', '<p class="text-red-500 text-xs italic font-bold"> Incorrect password. Please try again. </p>')
                 return render(request, 'iterio_app/delete_profile.html', {'form': form, 'Incorrect': True})
     else:
         form = DeleteProfileForm()
