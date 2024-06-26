@@ -14,6 +14,7 @@
     </div>
     <div id="register-container" class="max-w-md w-full bg-white p-8 rounded-lg shadow-lg">
         <h1 class="text-3xl font-bold text-gray-900 mb-6 text-center">Register</h1>
+        <p class="text-sm text-gray-600 text-left mb-4"><span class="text-red-500">*</span> = Required field</p>
         <form id="register-form" method="POST" action="{% url 'register' %}">
             {% csrf_token %}
             <div class="space-y-4">
@@ -37,7 +38,7 @@
 
                 <!-- First Name -->
                 <div>
-                    <label for="{{ form.first_name.id_for_label }}" class="block text-sm font-medium text-gray-700">First Name</label>
+                    <label for="{{ form.first_name.id_for_label }}" class="block text-sm font-medium text-gray-700">First Name<span class="text-red-500">*</span></label>
                     {{ form.first_name }}
                     {% if form.first_name.errors %}
                         <p class="text-red-600 text-sm">{{ form.first_name.errors }}</p>
@@ -46,7 +47,7 @@
 
                 <!-- Last Name -->
                 <div>
-                    <label for="{{ form.last_name.id_for_label }}" class="block text-sm font-medium text-gray-700">Last Name</label>
+                    <label for="{{ form.last_name.id_for_label }}" class="block text-sm font-medium text-gray-700">Last Name<span class="text-red-500">*</span></label>
                     {{ form.last_name }}
                     {% if form.last_name.errors %}
                         <p class="text-red-600 text-sm">{{ form.last_name.errors }}</p>
@@ -56,7 +57,7 @@
                 <!-- Password -->
                 <div>
                     {{ form.password1.help_text|safe }}
-                    <label for="{{ form.password1.id_for_label }}" class="block text-sm font-medium text-gray-700">Password</label>
+                    <label for="{{ form.password1.id_for_label }}" class="block text-sm font-medium text-gray-700">Password<span class="text-red-500">*</span></label>
                     {{ form.password1 }}
                     {% if form.password1.errors %}
                         <p class="text-red-600 text-sm">{{ form.password1.errors }}</p>
@@ -65,7 +66,7 @@
 
                 <!-- Confirm Password -->
                 <div>
-                    <label for="{{ form.password2.id_for_label }}" class="block text-sm font-medium text-gray-700">Confirm Password</label>
+                    <label for="{{ form.password2.id_for_label }}" class="block text-sm font-medium text-gray-700">Confirm Password<span class="text-red-500">*</span></label>
                     {{ form.password2 }}
                     {{ form.password2.help_text|safe }}
                     {% if form.password2.errors %}
