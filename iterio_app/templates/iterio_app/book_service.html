@@ -89,7 +89,7 @@
             {% for provider in service.providers.all %}
                 <p class="mb-2">
                     <a class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" href="{% url 'service_provider_profile' provider.id %}">
-                    More about {{ provider.user.username }}
+                    More about {{ provider.user.name }}
                     </a>
                 </p>
             {% endfor %}
