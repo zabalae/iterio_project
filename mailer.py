@@ -226,11 +226,13 @@ class connection:
                     print("\t###############################################################")
                     content[f"{username}.{user_email}"] = {'Status': 'Invalid',
                                                            'Username': username,
-                                                           'Email' : user_email}
+                                                           'Email' : user_email,
+                                                           'Filter-Method': 'User-or-Email'}
                 else:
-                    content[f"Unknown.{data}"] = {'Status': 'Invalid',
-                                                  'Username': 'Unknown',
-                                                  'Email': data}
+                    content[f"Last-register-user-{username}.{data}"] = {'Status': 'Undetermine-user',
+                                                  'Username': f'Last-register-user-{username}',
+                                                  'Email': data,
+                                                  'Filter-Method': "Email"}
                 await connection.save_json(content)
         except smtplib.SMTPException as e:
             print(f"FAIL sending mail:\n{e}")  

@@ -6,17 +6,23 @@
 
 {% block content %}
 <div class="bg-gray-100 min-h-screen flex items-center justify-center">
-    <div class="max-w-md w-full bg-white p-8 rounded-lg shadow-lg">
+    <div id="popup-container" class="hidden max-w-md w-full bg-white p-8 rounded-lg shadow-lg" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; z-index: 1;">
+        <div id="popup-validator">
+            <p class="text-center">Verifying Your Info</p>
+            <img src="https://media.tenor.com/_62bXB8gnzoAAAAi/loading.gif" alt="Loading..." style="width: 15%; height: auto; display: block; margin: auto; margin-top: 25px;">
+        </div>
+    </div>
+    <div id="register-container" class="max-w-md w-full bg-white p-8 rounded-lg shadow-lg">
         <h1 class="text-3xl font-bold text-gray-900 mb-6 text-center">Register</h1>
-        <form method="POST" action="{% url 'register' %}">
+        <form id="register-form" method="POST" action="{% url 'register' %}">
             {% csrf_token %}
             <div class="space-y-4">
                 <!-- Username -->
                 <div>
                     <label for="{{ form.username.id_for_label }}" class="block text-sm font-medium text-gray-700">Username</label>
                     {{ form.username }}
-                    {% if form.username.errors %}
-                        <p class="text-red-600 text-sm">{{ form.username.errors }}</p>
+                    {% if invalid_username %}
+                        <p class="text-red-600 text-sm">Oops! This username is already in use.</p>
                     {% endif %}
                 </div>
 
@@ -24,8 +30,8 @@
                 <div>
                     <label for="{{ form.email.id_for_label }}" class="block text-sm font-medium text-gray-700">Email Address</label>
                     {{ form.email }}
-                    {% if form.email.errors %}
-                        <p class="text-red-600 text-sm">{{ form.email.errors }}</p>
+                    {% if invalid_email %}
+                        <p class="text-red-600 text-sm">Oops! This email is already registered.</p>
                     {% endif %}
                 </div>
 
@@ -49,9 +55,9 @@
 
                 <!-- Password -->
                 <div>
+                    {{ form.password1.help_text|safe }}
                     <label for="{{ form.password1.id_for_label }}" class="block text-sm font-medium text-gray-700">Password</label>
                     {{ form.password1 }}
-                    {{ form.password1.help_text|safe }}
                     {% if form.password1.errors %}
                         <p class="text-red-600 text-sm">{{ form.password1.errors }}</p>
                     {% endif %}
@@ -69,10 +75,56 @@
 
                 <!-- Submit Button -->
                 <div class="mt-6">
-                    <button type="submit" class="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-white bg-gray-900 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Sign up</button>
+                    <button id="submit-btn" type="submit" class="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-white bg-gray-900 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Sign up</button>
                 </div>
             </div>
         </form>
     </div>
 </div>
+
+<style>
+    .dimmed {
+        opacity: 0.5;
+    }
+    .no-scroll {
+        overflow: hidden;
+    }
+    .no-interact {
+        pointer-events: none;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('register-form');
+        const popupContainer = document.getElementById('popup-container');
+        const registerContainer = document.getElementById('register-container');
+        const body = document.body;
+
+        form.addEventListener('submit', function(event) {
+            // Check if all fields are filled (you can add more validation as needed)
+            const username = document.getElementById('id_username').value.trim();
+            const email = document.getElementById('id_email').value.trim();
+            const firstName = document.getElementById('id_first_name').value.trim();
+            const lastName = document.getElementById('id_last_name').value.trim();
+            const password1 = document.getElementById('id_password1').value.trim();
+            const password2 = document.getElementById('id_password2').value.trim();
+
+            if (username !== '' && email !== '' && firstName !== '' && lastName !== '' && password1 !== '' && password2 !== '') {
+                // All fields are filled, show popup and dim register container
+                popupContainer.classList.remove('hidden');
+                registerContainer.classList.add('dimmed');
+                registerContainer.classList.add('no-interact');
+                body.classList.add('no-scroll');
+            } else {
+                // Fields are not all filled, do not show popup
+                popupContainer.classList.add('hidden');
+                registerContainer.classList.remove('dimmed');
+                registerContainer.classList.remove('no-interact');
+                body.classList.remove('no-scroll');
+            }
+        });
+    });
+</script>
+
 {% endblock %}
