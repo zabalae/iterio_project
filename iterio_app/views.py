@@ -284,7 +284,7 @@ def available_services(request, desired_category, subcategory_id):
         services = services.filter(cities__name__icontains=query).distinct()
 
     # Pagination logic
-    paginator = Paginator(services, 5) # Show 5 services per page
+    paginator = Paginator(services, 3) # Show 5 services per page
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
