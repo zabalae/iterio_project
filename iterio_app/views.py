@@ -395,26 +395,22 @@ def book_service(request, service_id):
 @login_required
 def book_timeslot(request, service_id):
     timeslot_id = request.POST.get('timeslot_id')
-    print(f"Received booking request for timeslot: {timeslot_id}")
-    
     try:
         timeslot = TimeSlot.objects.get(id=timeslot_id, service_id=service_id)
         
-        # Check if the timeslot is already booked by the user
-        if Booking.objects.filter(user=request.user, timeslot=timeslot).exists():
-            return JsonResponse({'error': 'You have already booked this timeslot.'}, status=400)
-        
+        # Check if the timeslot is already booked
+        if timeslot.is_booked:
+            return JsonResponse({'error': 'Timeslot already booked.'}, status=400)
+
         # Create a new booking
-        booking = Booking.objects.create(user=request.user, timeslot=timeslot)
-        print(f"Booking created for timeslot: {timeslot_id} by user: {request.user.id}")
+        booking = Booking.objects.create(user=request.user, service_slot=timeslot)
+        timeslot.is_booked = True
+        timeslot.save()
+        
         return JsonResponse({'message': 'Timeslot booked successfully.'})
     
     except TimeSlot.DoesNotExist:
-        print(f"Timeslot not found: {timeslot_id}")
-        return JsonResponse({'error': 'Timeslot not found.'}, status=404)
-    except Exception as e:
-        print(f"Error occurred: {e}")
-        return JsonResponse({'error': 'An error occurred while booking the timeslot.'}, status=500)
+        return JsonResponse({'error': 'Invalid timeslot.'}, status=400)
 
 def booking_success(request):
     return render(request, 'iterio_app/booking_success.html')
