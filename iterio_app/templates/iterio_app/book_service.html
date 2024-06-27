@@ -51,6 +51,12 @@
             max-height: 500px;
             overflow: hidden;
         }
+
+        /* Custom CSS for event hover effect */
+        .fc-event:hover {
+            background-color: #0e3f99; /* Change background color on hover */
+            cursor: pointer; /* Change cursor to pointer on hover */
+        }
     </style>
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -89,7 +95,7 @@
             {% for provider in service.providers.all %}
                 <p class="mb-2">
                     <a class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" href="{% url 'service_provider_profile' provider.id %}">
-                    More about {{ provider.user.name }}
+                    More about {{ provider.user.first_name }}
                     </a>
                 </p>
             {% endfor %}
@@ -166,6 +172,12 @@
                 },
                 dateClick: function(info) {
                     alert('Date: ' + info.dateStr);
+                },
+                eventMouseEnter: function(info) {
+                    info.el.classList.add('fc-event-hover'); // Add class on mouse enter
+                },
+                eventMouseLeave: function(info) {
+                    info.el.classList.remove('fc-event-hover'); // Remove class on mouse leave
                 }
             });
             calendar.render();

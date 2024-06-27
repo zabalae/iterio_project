@@ -28,7 +28,7 @@
                         <td>{{ booking.timeslot.start_time }}</td>
                         <td>{{ booking.timeslot.end_time }}</td>
                         <td>{{ booking.timeslot.service.name }}</td>
-                        <td>{{ booking.timeslot.service.providers.all.0.user.username }}</td>
+                        <td>{{ booking.timeslot.service.providers.all.0.user.first_name }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>

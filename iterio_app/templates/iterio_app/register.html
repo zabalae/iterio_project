@@ -1,6 +1,9 @@
 {% extends 'main.html' %}
 
 {% load static %}
+{% block head %}
+    <script src="{% static 'iterio_app/js/register_form_validation.js' %}"></script>
+{% endblock %}
 {% load static tailwind_tags %}
 {% tailwind_css %}
 
@@ -14,13 +17,15 @@
     </div>
     <div id="register-container" class="max-w-md w-full bg-white p-8 rounded-lg shadow-lg">
         <h1 class="text-3xl font-bold text-gray-900 mb-6 text-center">Register</h1>
+        <p class="text-sm text-gray-600 text-left mb-4"><span class="text-red-500">*</span> = Required field</p>
         <form id="register-form" method="POST" action="{% url 'register' %}">
             {% csrf_token %}
             <div class="space-y-4">
                 <!-- Username -->
                 <div>
-                    <label for="{{ form.username.id_for_label }}" class="block text-sm font-medium text-gray-700">Username</label>
+                    <label for="{{ form.username.id_for_label }}" class="block text-sm font-medium text-gray-700">Username<span class="text-red-500">*</span></label>
                     {{ form.username }}
+                    <p id="id_username_error" class="text-red-600 text-sm" style="display: none;">This field is required.</p>
                     {% if invalid_username %}
                         <p class="text-red-600 text-sm">Oops! This username is already in use.</p>
                     {% endif %}
@@ -28,8 +33,9 @@
 
                 <!-- Email -->
                 <div>
-                    <label for="{{ form.email.id_for_label }}" class="block text-sm font-medium text-gray-700">Email Address</label>
+                    <label for="{{ form.email.id_for_label }}" class="block text-sm font-medium text-gray-700">Email Address<span class="text-red-500">*</span></label>
                     {{ form.email }}
+                    <p id="id_email_error" class="text-red-600 text-sm" style="display: none;">This field is required.</p>
                     {% if invalid_email %}
                         <p class="text-red-600 text-sm">Oops! This email is already registered.</p>
                     {% endif %}
@@ -37,39 +43,43 @@
 
                 <!-- First Name -->
                 <div>
-                    <label for="{{ form.first_name.id_for_label }}" class="block text-sm font-medium text-gray-700">First Name</label>
+                    <label for="{{ form.first_name.id_for_label }}" class="block text-sm font-medium text-gray-700">First Name<span class="text-red-500">*</span></label>
                     {{ form.first_name }}
+                    <p id="id_first_name_error" class="text-red-600 text-sm" style="display: none;">This field is required.</p>
                     {% if form.first_name.errors %}
-                        <p class="text-red-600 text-sm">{{ form.first_name.errors }}</p>
+                        <p class="text-red-600 text-sm">{{ form.first_name.errors.0 }}</p>
                     {% endif %}
                 </div>
 
                 <!-- Last Name -->
                 <div>
-                    <label for="{{ form.last_name.id_for_label }}" class="block text-sm font-medium text-gray-700">Last Name</label>
+                    <label for="{{ form.last_name.id_for_label }}" class="block text-sm font-medium text-gray-700">Last Name<span class="text-red-500">*</span></label>
                     {{ form.last_name }}
+                    <p id="id_last_name_error" class="text-red-600 text-sm" style="display: none;">This field is required.</p>
                     {% if form.last_name.errors %}
-                        <p class="text-red-600 text-sm">{{ form.last_name.errors }}</p>
+                        <p class="text-red-600 text-sm">{{ form.last_name.errors.0 }}</p>
                     {% endif %}
                 </div>
 
                 <!-- Password -->
                 <div>
                     {{ form.password1.help_text|safe }}
-                    <label for="{{ form.password1.id_for_label }}" class="block text-sm font-medium text-gray-700">Password</label>
+                    <label for="{{ form.password1.id_for_label }}" class="block text-sm font-medium text-gray-700">Password<span class="text-red-500">*</span></label>
                     {{ form.password1 }}
+                    <p id="id_password1_error" class="text-red-600 text-sm" style="display: none;">This field is required.</p>
                     {% if form.password1.errors %}
-                        <p class="text-red-600 text-sm">{{ form.password1.errors }}</p>
+                        <p class="text-red-600 text-sm">{{ form.password1.errors.0 }}</p>
                     {% endif %}
                 </div>
 
                 <!-- Confirm Password -->
                 <div>
-                    <label for="{{ form.password2.id_for_label }}" class="block text-sm font-medium text-gray-700">Confirm Password</label>
+                    <label for="{{ form.password2.id_for_label }}" class="block text-sm font-medium text-gray-700">Confirm Password<span class="text-red-500">*</span></label>
                     {{ form.password2 }}
                     {{ form.password2.help_text|safe }}
+                    <p id="id_password2_error" class="text-red-600 text-sm" style="display: none;">This field is required.</p>
                     {% if form.password2.errors %}
-                        <p class="text-red-600 text-sm">{{ form.password2.errors }}</p>
+                        <p class="text-red-600 text-sm">{{ form.password2.errors.0 }}</p>
                     {% endif %}
                 </div>
 
@@ -103,7 +113,10 @@
         const body = document.body;
 
         form.addEventListener('submit', function(event) {
-            // Check if all fields are filled (you can add more validation as needed)
+            // Prevent form submission
+            event.preventDefault();
+
+            // Check if all required fields are filled
             const username = document.getElementById('id_username').value.trim();
             const email = document.getElementById('id_email').value.trim();
             const firstName = document.getElementById('id_first_name').value.trim();
@@ -111,18 +124,45 @@
             const password1 = document.getElementById('id_password1').value.trim();
             const password2 = document.getElementById('id_password2').value.trim();
 
-            if (username !== '' && email !== '' && firstName !== '' && lastName !== '' && password1 !== '' && password2 !== '') {
-                // All fields are filled, show popup and dim register container
+            // Remove any existing error messages
+            const errorMessages = form.querySelectorAll('.text-red-600');
+            errorMessages.forEach(function(element) {
+                element.style.display = 'none';
+            });
+
+            // Check if any required field is empty
+            let formValid = true;
+            if (username === '') {
+                document.getElementById('id_username_error').style.display = 'block';
+                formValid = false;
+            }
+            if (email === '') {
+                document.getElementById('id_email_error').style.display = 'block';
+                formValid = false;
+            }
+            if (firstName === '') {
+                document.getElementById('id_first_name_error').style.display = 'block';
+                formValid = false;
+            }
+            if (lastName === '') {
+                document.getElementById('id_last_name_error').style.display = 'block';
+                formValid = false;
+            }
+            if (password1 === '') {
+                document.getElementById('id_password1_error').style.display = 'block';
+                formValid = false;
+            }
+            if (password2 === '') {
+                document.getElementById('id_password2_error').style.display = 'block';
+                formValid = false;
+            }
+
+            // If form is valid, proceed with submission actions
+            if (formValid) {
                 popupContainer.classList.remove('hidden');
                 registerContainer.classList.add('dimmed');
                 registerContainer.classList.add('no-interact');
                 body.classList.add('no-scroll');
-            } else {
-                // Fields are not all filled, do not show popup
-                popupContainer.classList.add('hidden');
-                registerContainer.classList.remove('dimmed');
-                registerContainer.classList.remove('no-interact');
-                body.classList.remove('no-scroll');
             }
         });
     });

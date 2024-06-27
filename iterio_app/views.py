@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.models import User
-from django.contrib.auth.forms import UserCreationForm, UserChangeForm
+from django.contrib.auth.forms import UserCreationForm, UserChangeForm, AuthenticationForm
 from .forms import SignUpForm, UpdateUserForm, ChangePasswordForm, UserInfoForm, ServiceForm, TimeSlotForm, BookingForm, DeleteProfileForm
 from django import forms
 from .models import Profile, ServiceProvider, SubCategory, Category, City, Service, TimeSlot, Booking
@@ -30,19 +30,21 @@ def aboutUs(request):
     return render(request, 'iterio_app/aboutUs.html')
 
 def loginPage(request):
-    if request.method == "POST":
-        username = request.POST['username']
-        password = request.POST['password']
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            login(request, user)
-            messages.success(request, 'You are now logged in')
-            return redirect('home')
-        else:
-            messages.success(request, 'Invalid username or password')
-            return redirect('login')
+    if request.method == 'POST':
+        form = AuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+            user = authenticate(request, username=username, password=password)
+            if user is not None:
+                login(request, user)
+                return redirect('home')
+            else:
+                form.add_error(None, 'Invalid username or password')
     else:
-        return render(request, 'iterio_app/loginPage.html')
+        form = AuthenticationForm()
+
+    return render(request, 'iterio_app/loginPage.html', {'form': form})
 
 def logoutUser(request):
     logout(request)
@@ -393,26 +395,22 @@ def book_service(request, service_id):
 @login_required
 def book_timeslot(request, service_id):
     timeslot_id = request.POST.get('timeslot_id')
-    print(f"Received booking request for timeslot: {timeslot_id}")
-    
     try:
         timeslot = TimeSlot.objects.get(id=timeslot_id, service_id=service_id)
         
-        # Check if the timeslot is already booked by the user
-        if Booking.objects.filter(user=request.user, timeslot=timeslot).exists():
-            return JsonResponse({'error': 'You have already booked this timeslot.'}, status=400)
-        
+        # Check if the timeslot is already booked
+        if timeslot.is_booked:
+            return JsonResponse({'error': 'Timeslot already booked.'}, status=400)
+
         # Create a new booking
-        booking = Booking.objects.create(user=request.user, timeslot=timeslot)
-        print(f"Booking created for timeslot: {timeslot_id} by user: {request.user.id}")
+        booking = Booking.objects.create(user=request.user, service_slot=timeslot)
+        timeslot.is_booked = True
+        timeslot.save()
+        
         return JsonResponse({'message': 'Timeslot booked successfully.'})
     
     except TimeSlot.DoesNotExist:
-        print(f"Timeslot not found: {timeslot_id}")
-        return JsonResponse({'error': 'Timeslot not found.'}, status=404)
-    except Exception as e:
-        print(f"Error occurred: {e}")
-        return JsonResponse({'error': 'An error occurred while booking the timeslot.'}, status=500)
+        return JsonResponse({'error': 'Invalid timeslot.'}, status=400)
 
 def booking_success(request):
     return render(request, 'iterio_app/booking_success.html')

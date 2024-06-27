@@ -23,7 +23,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             <!-- Display All the Categories-->
             {% for category in categories %}
-            <div class="group relative cursor-pointer flex items-center justify-center overflow-hidden transition-shadow hover:shadow-xl hover:shadow-black/30 rounded-2xl">
+            <div class="group relative flex items-center justify-center overflow-hidden transition-shadow hover:shadow-xl hover:shadow-black/30 rounded-2xl">
                 <div class="h-96 w-full">
                   <img class="h-full w-full object-cover rounded-2xl transition-transform duration-500 group-hover:rotate-3 group-hover:scale-125" src="{{ category.img_path }}" alt="{{ category.name }}" />
                 </div>
@@ -32,7 +32,7 @@
                   <h1 class="font-dmserif text-3xl font-bold text-white">{{ category.name }}</h1>
                   <p class="mb-3 text-lg italic text-white opacity-0 transition-opacity duration-300 group-hover:opacity-100">{{ category.details }}</p>
                   <a href="{% url 'subcategory_selection' category.id %}?category={{ category.id }}">
-                    <button class="rounded-full bg-neutral-900 py-2 px-3.5 font-com text-sm capitalize text-white shadow shadow-black/60">View All Subcategories</button>
+                    <button class="cursor-pointer rounded-full bg-neutral-900 py-2 px-3.5 font-com text-sm capitalize text-white shadow shadow-black/60">View All Subcategories</button>
                   </a>
                 </div>
             </div>
