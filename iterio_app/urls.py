@@ -10,6 +10,7 @@ urlpatterns = [
     path('profile/', views.profile, name='profile'),
     path('update_user/', views.update_user, name='update_user'),
     path('update_password/', views.update_password, name='update_password'),
+    path('inbox/', views.inbox, name='inbox'),
     path('ajax/load-subcategories/', views.load_subcategories, name='ajax_load_subcategories'),
     path('create-service/', views.create_service, name='create_service'),
     path('update_service/<int:service_id>/', views.update_service, name='update_service'),

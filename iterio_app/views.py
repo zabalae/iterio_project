@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm, AuthenticationForm
 from .forms import SignUpForm, UpdateUserForm, ChangePasswordForm, UserInfoForm, ServiceForm, TimeSlotForm, BookingForm, DeleteProfileForm
 from django import forms
-from .models import Profile, ServiceProvider, SubCategory, Category, City, Service, TimeSlot, Booking
+from .models import Profile, ServiceProvider, SubCategory, Category, City, Service, TimeSlot, Booking, ChatMessage
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
@@ -15,6 +15,7 @@ import asyncio
 from mailer import connection
 import datetime
 from django.views.decorators.http import require_POST
+from django.db.models import OuterRef, Subquery, Q
 
 # Create your views here.
 
@@ -434,3 +435,27 @@ def view_provider_profile(request, provider_id):
         'profile': profile,
     }
     return render(request, 'iterio_app/view_provider_profile.html', context)
+
+@login_required
+def inbox(request):
+    user_id = request.user
+    chat_message = ChatMessage.objects.filter(
+        id__in = Subquery(
+            User.objects.filter(
+                Q(sender__receiver=user_id) |
+                Q(receiver__sender=user_id)
+            ).distinct().annotate(
+                last_msg=Subquery(
+                    ChatMessage.objects.filter(
+                        Q(sender=OuterRef("id"), receiver=user_id) |
+                        Q(receiver=OuterRef("id"), sender=user_id)
+                    ).order_by("-id")[:1].values_list("id", flat=True)
+                )
+            ).values_list("last_msg", flat=True).order_by("-id")
+        )
+    ).order_by("-id")
+
+    context = {
+        'chat_message': chat_message,
+    }
+    return render(request, 'iterio_app/inbox.html')

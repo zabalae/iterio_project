@@ -1,0 +1,14 @@
+{% extends 'main.html' %}
+
+{% load static %}
+{% load static tailwind_tags %}
+{% tailwind_css %}
+
+{% block content %}
+<div uk-toggle="target: #offcanvas-chat" class="start-chat">
+</div>
+
+<div id="offcanvas-chat" uk-offcanvas="flip: true; overlay: True">
+</div>
+
+{% endblock %}

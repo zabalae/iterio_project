@@ -3,6 +3,7 @@ import datetime
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.utils import timezone
+from shortuuidfield import ShortUUIDField
 
 class City(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -120,3 +121,19 @@ class Booking(models.Model):
     def __str__(self):
         return f"Booking by {self.user.username} for {self.time_slot.service.name} on {self.time_slot.date} at {self.time_slot.start_time}"
     
+
+class ChatMessage(models.Model):
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='chat_user')
+    sender = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='sender')
+    receiver = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='receiver')
+
+    message = models.CharField(max_length=1000000)
+    is_read = models.BooleanField(default=False)
+    date = models.DateTimeField(auto_now_add=True)
+    mid = ShortUUIDField(max_length=25)
+
+    # def __str__(self):
+    #     return self.sender
+    
+    class Meta:
+        verbose_name_plural = 'Chat Message'
