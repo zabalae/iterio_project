@@ -336,7 +336,7 @@ def add_time_slot(request, service_id):
 @login_required
 def time_slots_created(request, service_id):
     service = get_object_or_404(Service, id=service_id)
-    timeslots = TimeSlot.objects.filter(service=service)
+    timeslots = TimeSlot.objects.filter(service=service).order_by('date', 'start_time')
 
     context = {
         'service': service,

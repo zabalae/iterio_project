@@ -5,37 +5,33 @@
 {% tailwind_css %}
 
 {% block content %}
-<div class="container mx-auto px-4 py-8">
-    <h1 class="text-3xl font-bold mb-6">My Bookings</h1>
-    
-    <!-- Booked Timeslots -->
-    <div class="info-container">
-        {% if bookings %}
-            <table>
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Start Time</th>
-                        <th>End Time</th>
-                        <th>Service</th>
-                        <th>Provider</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for booking in bookings %}
-                    <tr>
-                        <td>{{ booking.timeslot.date }}</td>
-                        <td>{{ booking.timeslot.start_time }}</td>
-                        <td>{{ booking.timeslot.end_time }}</td>
-                        <td>{{ booking.timeslot.service.name }}</td>
-                        <td>{{ booking.timeslot.service.providers.all.0.user.first_name }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        {% else %}
-            <p>You have no bookings.</p>
-        {% endif %}
+<body class="font-sans text-gray-900 bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold mb-6">My Bookings</h1>
+        
+        <table class="min-w-full bg-white shadow-md rounded-lg">
+            <thead>
+                <tr>
+                    <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-600">Service Name</th>
+                    <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-600">Date</th>
+                    <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-600">Start Time</th>
+                    <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-600">End Time</th>
+                    <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-600">Provider</th>
+                    <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-600">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for booking in bookings %}
+                <tr>
+                    <td class="py-2 px-4">{{ timeslot.date }}</td>
+                    <td class="py-2 px-4">{{ booking.timeslot }}</td>
+                    <td class="py-2 px-4">{{ timeslot.end_time }}</td>
+                    <td class="py-2 px-4">{{ timeslot.end_time }}</td>
+                    <td class="py-2 px-4">{{ timeslot.end_time }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
-</div>
+</body>
 {% endblock %}
