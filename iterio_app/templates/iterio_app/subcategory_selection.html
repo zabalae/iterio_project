@@ -5,35 +5,83 @@
 {% tailwind_css %}
 
 {% block content %}
-<h1 class="text-center">Subcategory Selection</h1>
-<br>
-<nav class="bg-gray-300 dark:bg-gray-300">
-    <div class="max-w-screen-xl px-4 py-3 mx-auto scroll-container">
-        <div class="flex items-center scroll-content">
-            <ul class="font-medium mt-0 text-sm flex justify-evenly space-x-6 rtl:space-x-reverse overflow-x-auto whitespace-nowrap scrollbar">
-                {% for category in categories %}
-                <li class="nav-item">
-                    <a href="?category={{ category.id }}" class="text-gray-900 hover:text-gray-500">{{ category.name }}</a>
-                </li>
-                {% endfor %}
-            </ul>
+<div class="container mx-auto p-4">
+    <h1 class="text-3xl font-bold text-center mb-8">Subcategory Selection</h1>
+
+    <nav class="bg-gray-200 shadow rounded-lg mb-8">
+        <div class="max-w-screen-xl px-4 py-3 mx-auto">
+            <div class="flex items-center justify-center overflow-x-auto custom-scrollbar" id="category-scroll-container">
+                <ul class="flex justify-evenly space-x-4 whitespace-nowrap">
+                    {% for category in categories %}
+                    <li class="nav-item">
+                        <a href="?category={{ category.id }}" class="text-gray-800 hover:text-gray-600 transition duration-300">{{ category.name }}</a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
         </div>
-    </div>
-</nav>
-<br>
-<br>
-<section class="mb-16">
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        <!-- Display All the services according to SubCategories -->
-        <h1 class="text-2xl font-bold col-span-full">Subcategories for {{ desired_category.name }}</h1>
-        {% for subcategory in subcategories %}
-            <div class="mb-6">
-                <a href="{% url 'available_services' desired_category.name subcategory.id %}" class="block bg-white p-4 rounded shadow hover:shadow-lg hover:scale-105">
-                    <h2 class="text-2xl font-semibold text-gray-700">{{ subcategory.name }}</h2>
+    </nav>
+
+    <section>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <h2 class="text-2xl font-bold col-span-full mb-6">Subcategories for {{ desired_category.name }}</h2>
+            {% for subcategory in subcategories %}
+            <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition duration-300 transform hover:scale-105">
+                <a href="{% url 'available_services' desired_category.name subcategory.id %}">
+                    <h3 class="text-xl font-semibold text-gray-800">{{ subcategory.name }}</h3>
                 </a>
             </div>
-        {% endfor %}
-    </div>
-</section>
+            {% endfor %}
+        </div>
+    </section>
+</div>
+
+<style>
+    .custom-scrollbar {
+        scrollbar-width: thin;
+        scrollbar-color: #abb3bd #E0E0E0;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar {
+        height: 12px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: #E0E0E0;
+        border-radius: 6px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background-color: #abb3bd;
+        border-radius: 6px;
+        border: 3px solid #E0E0E0;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background-color: #051b2c;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const scrollContainer = document.getElementById('category-scroll-container');
+
+        scrollContainer.addEventListener('mousemove', function (event) {
+            const containerWidth = scrollContainer.offsetWidth;
+            const scrollWidth = scrollContainer.scrollWidth;
+            const mouseX = event.clientX - scrollContainer.getBoundingClientRect().left;
+            const threshold = 50; // Distance from the edge in pixels to start scrolling
+            const maxScrollSpeed = 20; // Max pixels to scroll per frame
+
+            if (mouseX < threshold) {
+                const scrollSpeed = maxScrollSpeed * ((threshold - mouseX) / threshold);
+                scrollContainer.scrollLeft -= scrollSpeed;
+            } else if (mouseX > containerWidth - threshold) {
+                const scrollSpeed = maxScrollSpeed * ((mouseX - (containerWidth - threshold)) / threshold);
+                scrollContainer.scrollLeft += scrollSpeed;
+            }
+        });
+    });
+</script>
 
 {% endblock %}
