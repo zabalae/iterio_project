@@ -118,6 +118,8 @@
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/timegrid@5.10.1/main.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/interaction@5.10.1/main.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.34/moment-timezone-with-data.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             var calendarEl = document.getElementById('calendar');
@@ -131,6 +133,15 @@
                 validRange: {
                     start: new Date().toISOString().split('T')[0]
                 },
+                // visibleRange: function(currentDate) {
+                //     var today = new Date();
+                //     return {
+                //         start: today.toISOString().split('T')[0],
+                //         end: new Date(today.getTime() + (7 * 24 * 60 * 60 * 1000)).toISOString().split('T')[0] // 7 days from now
+                //     };
+                // },
+                slotMinTime: moment().tz("America/Puerto_Rico").format('HH:mm:ss'),
+                timezone: "America/Puerto_Rico",
                 events: {
                     url: "{% url 'service_slots' service.id %}",
                     failure: function() {
@@ -152,7 +163,7 @@
                         if (result.isConfirmed) {
                             console.log('Booking timeslot', info.event.id); // Debug log
                             $.ajax({
-                                url: "{% url 'book_timeslot' service.id %}",
+                                url: "{% url 'my_bookings' %}",
                                 method: 'POST',
                                 data: {
                                     timeslot_id: info.event.id,
@@ -161,6 +172,7 @@
                                 success: function(response) {
                                     console.log('Booking successful', response);
                                     Swal.fire('Booked!', 'Your timeslot has been booked.', 'success');
+                                    calendar.refetchEvents(); // Refetch events to update calendar
                                 },
                                 error: function(response) {
                                     console.log('Booking failed', response);

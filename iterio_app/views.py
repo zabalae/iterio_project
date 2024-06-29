@@ -13,6 +13,7 @@ from django.urls import reverse
 from django.http import HttpResponseRedirect
 import asyncio
 from mailer import connection
+from datetime import date
 import datetime
 from django.views.decorators.http import require_POST
 from django.db.models import OuterRef, Subquery, Q
@@ -337,10 +338,12 @@ def add_time_slot(request, service_id):
 def time_slots_created(request, service_id):
     service = get_object_or_404(Service, id=service_id)
     timeslots = TimeSlot.objects.filter(service=service).order_by('date', 'start_time')
+    today = date.today()
 
     context = {
         'service': service,
         'timeslots': timeslots,
+        'today': today,
     }
     return render(request, 'iterio_app/time_slots_created.html', context)
 
@@ -419,7 +422,7 @@ def booking_success(request):
 # This allows the users to see the bookings they have made
 @login_required
 def my_bookings(request):
-    bookings = Booking.objects.filter(user=request.user)
+    bookings = Booking.objects.filter(user=request.user).select_related('time_slot', 'time_slot__service')
 
     context = {
         'bookings': bookings
