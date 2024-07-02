@@ -114,7 +114,7 @@ class TimeSlot(models.Model):
 
 
 class Booking(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, related_name='bookings', on_delete=models.CASCADE)
     time_slot = models.ForeignKey(TimeSlot, on_delete=models.CASCADE, related_name='bookings', default=1)
     created_at = models.DateTimeField(default=timezone.now)
 

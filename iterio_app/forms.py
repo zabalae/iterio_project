@@ -131,11 +131,11 @@ class ServiceForm(forms.ModelForm):
 
 
 class BookingForm(forms.ModelForm):
-    service_slot = forms.ModelChoiceField(queryset=TimeSlot.objects.filter(is_booked=False))
+    time_slot = forms.ModelChoiceField(queryset=TimeSlot.objects.filter(is_booked=False))
 
     class Meta:
         model = Booking
-        fields = ['service_slot']
+        fields = ['time_slot']
 
 
 class TimeSlotForm(forms.ModelForm):

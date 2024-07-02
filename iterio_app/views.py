@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404, HttpResponse
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.models import User
@@ -17,6 +17,10 @@ from datetime import date
 import datetime
 from django.views.decorators.http import require_POST
 from django.db.models import OuterRef, Subquery, Q
+from django.utils.timezone import now
+from django.utils import timezone
+import json
+from django.views.decorators.csrf import csrf_exempt
 
 # Create your views here.
 
@@ -286,7 +290,7 @@ def available_services(request, desired_category, subcategory_id):
         services = services.filter(cities__name__icontains=query).distinct()
 
     # Pagination logic
-    paginator = Paginator(services, 3) # Show 5 services per page
+    paginator = Paginator(services, 3) # Show 3 services per page
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
@@ -301,7 +305,7 @@ def available_services(request, desired_category, subcategory_id):
 # This is for time slots in calendar view in book_service.html
 def service_slots(request, service_id):
     service = get_object_or_404(Service, id=service_id)
-    timeslots = TimeSlot.objects.filter(service=service)
+    timeslots = TimeSlot.objects.filter(service=service, date__gte=now().date()).order_by('date', 'start_time')
     events = []
     for timeslot in timeslots:
         start_datetime = datetime.datetime.combine(timeslot.date, timeslot.start_time)
@@ -334,10 +338,11 @@ def add_time_slot(request, service_id):
     return render(request, 'iterio_app/add_time_slot.html', context)
 
 # This is for the service provider to be able to view the time slots he/she created
+# This version does exactly what I need it to 
 @login_required
 def time_slots_created(request, service_id):
     service = get_object_or_404(Service, id=service_id)
-    timeslots = TimeSlot.objects.filter(service=service).order_by('date', 'start_time')
+    timeslots = TimeSlot.objects.filter(service=service, date__gte=timezone.now().date(), end_time__gte=timezone.now().time()).order_by('date', 'start_time')
     today = date.today()
 
     context = {
@@ -373,56 +378,57 @@ def delete_time_slot(request, timeslot_id):
     timeslot.delete()
     return redirect('time_slots_created', service_id=service_id)
 
+# This is for displaying the services listed
 @login_required
-def book_service(request, service_id):
+def services_listed(request, service_id):
     service = get_object_or_404(Service, id=service_id)
-    if request.method == 'POST':
-        form = BookingForm(request.POST)
-        if form.is_valid():
-            booking = form.save(commit=False)
-            booking.user = request.user
-            booking.service_slot.is_booked = True
-            booking.service_slot.save()
-            booking.save()
-            return redirect('booking_success')
-    else:
-        form = BookingForm()
 
     context = {
         'service': service,
-        'form': form,
     }
     return render(request, 'iterio_app/book_service.html', context)
+# @login_required
+# def book_service(request, service_id):
+#     service = get_object_or_404(Service, id=service_id)
+#     if request.method == 'POST':
+#         form = BookingForm(request.POST)
+#         if form.is_valid():
+#             booking = form.save(commit=False)
+#             booking.user = request.user
+#             booking.service_slot.is_booked = True
+#             booking.service_slot.save()
+#             booking.save()
+#             return redirect('booking_success')
+#     else:
+#         form = BookingForm()
+
+#     context = {
+#         'service': service,
+#         'form': form,
+#     }
+#     return render(request, 'iterio_app/book_service.html', context)
 
 # This is for the user to book the time slot selected
-@require_POST
-@login_required
-def book_timeslot(request, service_id):
-    timeslot_id = request.POST.get('timeslot_id')
-    try:
-        timeslot = TimeSlot.objects.get(id=timeslot_id, service_id=service_id)
-        
-        # Check if the timeslot is already booked
-        if timeslot.is_booked:
-            return JsonResponse({'error': 'Timeslot already booked.'}, status=400)
-
-        # Create a new booking
-        booking = Booking.objects.create(user=request.user, service_slot=timeslot)
-        timeslot.is_booked = True
-        timeslot.save()
-        
-        return JsonResponse({'message': 'Timeslot booked successfully.'})
-    
-    except TimeSlot.DoesNotExist:
-        return JsonResponse({'error': 'Invalid timeslot.'}, status=400)
-
-def booking_success(request):
-    return render(request, 'iterio_app/booking_success.html')
+@csrf_exempt
+def book_time_slot(request):
+    if request.method == 'POST':
+        time_slot_id = request.POST.get('time_slot')
+        try:
+            time_slot = TimeSlot.objects.get(id=time_slot_id, is_booked=False)
+            booking = Booking.objects.create(user=request.user, time_slot=time_slot)
+            time_slot.is_booked = True
+            time_slot.save()
+            return JsonResponse({'success': True})
+        except TimeSlot.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Time slot does not exist or is already booked.'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'})
 
 # This allows the users to see the bookings they have made
 @login_required
 def my_bookings(request):
-    bookings = Booking.objects.filter(user=request.user).select_related('time_slot', 'time_slot__service')
+    bookings = request.user.bookings.filter(time_slot__date__gte=now().date()).order_by('time_slot__date', 'time_slot__start_time')
 
     context = {
         'bookings': bookings
