@@ -51,6 +51,12 @@
             max-height: 500px;
             overflow: hidden;
         }
+
+        .service-image {
+            width: 40%;
+            height: 40%; /* Adjust this height as needed */
+            object-fit: cover;
+        }
     </style>
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -84,7 +90,7 @@
             <p class="mb-2"><strong>Availability:</strong> {{ service.availability }}</p>
             <p class="mb-2"><strong>Contact Information:</strong> {{ service.contact_info }}</p>
             {% if service.picture %}
-                <img class="mt-4 w-full h-48 object-cover" src="{{ service.picture.url }}" alt="{{ service.name }} picture">
+                 <img class="mt-4 service-image" src="{{ service.picture.url }}" alt="{{ service.name }} picture">
             {% endif %}
             {% for provider in service.providers.all %}
                 <p class="mb-2">
