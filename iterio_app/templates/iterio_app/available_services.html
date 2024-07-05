@@ -31,9 +31,9 @@
                                 {% endfor %}
                             </p>
                             <p class="mb-2"><strong>Availability:</strong> {{ service.availability }}</p>
-                            {% if service.picture %}
-                                <img class="mt-4 w-full h-48 object-cover" src="{{ service.picture.url }}" alt="{{ service.name }} picture">
-                            {% endif %}
+<!--                            {% if service.picture %}-->
+<!--                                <img class="mt-4 w-full h-48 object-cover" src="{{ service.picture.url }}" alt="{{ service.name }} picture">-->
+<!--                            {% endif %}-->
                         </a>
                     {% else %}
                         <a href="{% url 'register' %}">
@@ -45,9 +45,9 @@
                                 {% endfor %}
                             </p>
                             <p class="mb-2"><strong>Availability:</strong> {{ service.availability }}</p>
-                            {% if service.picture %}
-                                <img class="mt-4 w-full h-48 object-cover" src="{{ service.picture.url }}" alt="{{ service.name }} picture">
-                            {% endif %}
+<!--                            {% if service.picture %}-->
+<!--                                <img class="mt-4 w-full h-48 object-cover" src="{{ service.picture.url }}" alt="{{ service.name }} picture">-->
+<!--                            {% endif %}-->
                         </a>
                     {% endif %}
                 </div>
