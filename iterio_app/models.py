@@ -3,6 +3,7 @@ import datetime
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.utils import timezone
+from shortuuidfield import ShortUUIDField
 
 class City(models.Model):
     name = models.CharField(max_length=100, unique=True)
