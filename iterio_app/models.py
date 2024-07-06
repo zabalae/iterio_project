@@ -91,16 +91,6 @@ class ServiceProvider(models.Model):
     def __str__(self):
         return self.user.username
 
-# Booking model
-# class Booking(models.Model):
-#     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='bookings')
-#     service = models.ForeignKey(Service, on_delete=models.CASCADE, related_name='bookings')
-#     provider = models.ForeignKey(ServiceProvider, on_delete=models.CASCADE, related_name='bookings')
-#     date = models.DateTimeField()
-#     notes = models.TextField(blank=True)
-
-#     def __str__(self):
-#         return f"Booking by {self.user.username} for {self.service.name} with {self.provider.user.username}"
 class TimeSlot(models.Model):
     service = models.ForeignKey(Service, on_delete=models.CASCADE, related_name='time_slot_service')
     date = models.DateField()
@@ -113,10 +103,30 @@ class TimeSlot(models.Model):
 
 
 class Booking(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    time_slot = models.ForeignKey(TimeSlot, on_delete=models.CASCADE, related_name='bookings', default=1)
+    user = models.ForeignKey(User, related_name='bookings', on_delete=models.CASCADE)
+    timeslot = models.ForeignKey(TimeSlot, on_delete=models.CASCADE, related_name='bookings')
     created_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
-        return f"Booking by {self.user.username} for {self.time_slot.service.name} on {self.time_slot.date} at {self.time_slot.start_time}"
+        return f"Booking by {self.user.username} for {self.timeslot.service.name} on {self.timeslot.date} at {self.timeslot.start_time}"
+
+
+class ChatMessage(models.Model):
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='chat_user')
+    sender = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='sender')
+    receiver = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='receiver')
+
+    message = models.CharField(max_length=1000000)
+    is_read = models.BooleanField(default=False)
+    date = models.DateTimeField(auto_now_add=True)
+    mid = ShortUUIDField(max_length=25)
+
+    def __str__(self):
+        return self.user.username
+    
+    class Meta:
+        ordering = ["-date"]
+        verbose_name_plural = 'Chat Message'
+
+
     

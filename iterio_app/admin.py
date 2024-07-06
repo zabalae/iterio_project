@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Category, Profile, SubCategory, Service, ServiceProvider, Booking, City, TimeSlot
+from .models import Category, Profile, SubCategory, Service, ServiceProvider, Booking, City, TimeSlot, ChatMessage
 from django.contrib.auth.models import User
 
 
@@ -17,6 +17,9 @@ class UserAdmin(admin.ModelAdmin):
     field = ['username', 'first_name', 'last_name', 'email']
     inlines = [ProfileInline]
 
+class ChatMessageAdmin(admin.ModelAdmin):
+    list_editable = ['message']
+    list_display = ['sender', 'receiver', 'message', 'is_read']
 
 admin.site.unregister(User)
 
@@ -28,3 +31,4 @@ admin.site.register(Booking)
 admin.site.register(SubCategory)
 admin.site.register(City)
 admin.site.register(TimeSlot)
+admin.site.register(ChatMessage, ChatMessageAdmin)
