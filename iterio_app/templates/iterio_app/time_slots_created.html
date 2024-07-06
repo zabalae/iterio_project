@@ -20,18 +20,44 @@
             </thead>
             <tbody>
                 {% for timeslot in timeslots %}
-                <tr>
-                    <td class="py-2 px-4">{{ timeslot.date }}</td>
-                    <td class="py-2 px-4">{{ timeslot.start_time }}</td>
-                    <td class="py-2 px-4">{{ timeslot.end_time }}</td>
-                    <td class="py-2 px-4">
-                        <a href="{% url 'update_time_slot' timeslot.id %}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Edit</a>
-                        <a href="{% url 'delete_time_slot' timeslot.id %}" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" onclick="return confirm('Are you sure you want to delete this timeslot?');">Delete</a>
-                    </td>
-                </tr>
+                    {% if timeslot.date >= today %}
+                    <tr>
+                        <td class="py-2 px-4">{{ timeslot.date }}</td>
+                        <td class="py-2 px-4">{{ timeslot.start_time }}</td>
+                        <td class="py-2 px-4">{{ timeslot.end_time }}</td>
+                        <td class="py-2 px-4">
+                            <a href="{% url 'update_time_slot' timeslot.id %}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Edit</a>
+                            <a href="{% url 'delete_time_slot' timeslot.id %}" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded delete-timeslot">Delete</a>
+                        </td>
+                    </tr>
+                    {% endif %}
                 {% endfor %}
             </tbody>
         </table>
     </div>
 </body>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        $('.delete-timeslot').on('click', function(event) {
+            event.preventDefault();
+            var link = $(this).attr('href');
+            Swal.fire({
+                title: 'Are you sure?',
+                text: 'Do you really want to delete this timeslot?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = link;
+                }
+            });
+        });
+    });
+</script>
 {% endblock %}
