@@ -140,11 +140,6 @@ class BookingForm(forms.ModelForm):
         super(BookingForm, self).__init__(*args, **kwargs)
         if service_id:
             self.fields['timeslot'].queryset = TimeSlot.objects.filter(service__id=service_id, is_booked=False)
-    # time_slot = forms.ModelChoiceField(queryset=TimeSlot.objects.filter(is_booked=False))
-
-    # class Meta:
-    #     model = Booking
-    #     fields = ['time_slot']
 
 
 class TimeSlotForm(forms.ModelForm):

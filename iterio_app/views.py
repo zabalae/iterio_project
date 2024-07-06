@@ -256,10 +256,6 @@ def delete_service(request, service_id):
     return render(request, 'iterio_app/delete_service.html', context)
 
 
-
-
-# ----------------------------------------------------------------------Views I created so far------------------------------------------------------------------------------------------------
-# good to go
 def subcategory_selection(request, category):
     # Get all categories for the navbar
     categories = Category.objects.all()
@@ -286,7 +282,7 @@ def subcategory_selection(request, category):
     }
     return render(request, 'iterio_app/subcategory_selection.html', context)
 
-# good to go
+
 def available_services(request, desired_category, subcategory_id):
     subcategory = get_object_or_404(SubCategory, id=subcategory_id)
     services = subcategory.services.all()
@@ -309,8 +305,7 @@ def available_services(request, desired_category, subcategory_id):
     }
     return render(request, 'iterio_app/available_services.html', context)
 
-# This is for time slots in calendar view in book_service.html
-# This is what the url in events uses to get the time slots available
+
 def service_slots(request, service_id):
     service = get_object_or_404(Service, id=service_id)
     timeslots = TimeSlot.objects.filter(service=service, date__gte=now().date()).order_by('date', 'start_time')
@@ -346,7 +341,6 @@ def add_time_slot(request, service_id):
     return render(request, 'iterio_app/add_time_slot.html', context)
 
 # This is for the service provider to be able to view the time slots he/she created
-# This version does almost evrything I need it to 
 @login_required
 def time_slots_created(request, service_id):
     service = get_object_or_404(Service, id=service_id)
