@@ -97,14 +97,62 @@
                     <a class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" href="{% url 'service_provider_profile' provider.id %}">
                     More about {{ provider.user.first_name }}
                     </a>
+
+                    <a class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" href="{% url 'inbox_detail' provider.user.username %}">
+                        Message {{ provider.user.first_name }}
+                    </a>
                 </p>
             {% endfor %}
+            <hr class="my-6">
+    
+            <div class="container mx-auto px-4 py-8">
+                <h1 class="text-3xl font-bold mb-6">Available Time Slots</h1>
+                
+                <table class="min-w-full bg-white shadow-md rounded-lg">
+                    <thead>
+                        <tr>
+                            <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-600">Date</th>
+                            <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-600">Start Time</th>
+                            <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-600">End Time</th>
+                            <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-600">Status</th>
+                            <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-600">Book</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for timeslot in timeslots %}
+                            {% if timeslot.date >= today %}
+                            <tr>
+                                <td class="py-2 px-4">{{ time_slot.date }}</td>
+                                <td class="py-2 px-4">{{ timeslot.start_time }}</td>
+                                <td class="py-2 px-4">{{ timeslot.end_time }}</td>
+                                <td class="py-2 px-4">
+                                    {% if time_slot.is_booked %}
+                                        Booked
+                                    {% else %}
+                                        Available
+                                    {% endif %}
+                                </td>
+                                <td class="py-2 px-4">
+                                    {% if not time_slot.is_booked %}
+                                        <form method="post" action="{% url 'book_time_slot' service.id %}">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="time_slot_id" value="{{ timeslot.id }}">
+                                            <button type="submit" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Confirm Booking</button>
+                                        </form>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>   
         </div>
+    </div>
 
-        <!-- Calendar -->
-        <div class="calendar-container">
-            <div id="calendar" class="calendar"></div>
-        </div>
+    <!-- Calendar -->
+    <div class="calendar-container">
+        <div id="calendar" class="calendar"></div>
     </div>
 
     <!-- Footer -->
@@ -133,7 +181,7 @@
                 validRange: {
                     start: new Date().toISOString().split('T')[0]
                 },
-                slotMinTime: moment().tz("America/Puerto_Rico").format('HH:mm:ss'),
+                slotMinTime: '00:00:00',  // Display all time slots from midnight
                 timezone: "America/Puerto_Rico",
                 events: {
                     url: "{% url 'service_slots' service.id %}",
@@ -145,8 +193,8 @@
                     Swal.fire({
                         title: 'Do you want to book this timeslot?',
                         html: '<p><strong>Date:</strong> ' + info.event.start.toLocaleDateString() + '</p>' +
-                              '<p><strong>Start Time:</strong> ' + info.event.start.toLocaleTimeString() + '</p>' +
-                              '<p><strong>End Time:</strong> ' + info.event.end.toLocaleTimeString() + '</p>',
+                            '<p><strong>Start Time:</strong> ' + info.event.start.toLocaleTimeString() + '</p>' +
+                            '<p><strong>End Time:</strong> ' + info.event.end.toLocaleTimeString() + '</p>',
                         icon: 'warning',
                         showCancelButton: true,
                         confirmButtonColor: '#3085d6',
@@ -156,7 +204,7 @@
                         if (result.isConfirmed) {
                             console.log('Booking timeslot', info.event.id); // Debug log
                             $.ajax({
-                                url: "{% url 'my_bookings' %}",
+                                url: "{% url 'book_time_slot' service.id %}",
                                 method: 'POST',
                                 data: {
                                     timeslot_id: info.event.id,

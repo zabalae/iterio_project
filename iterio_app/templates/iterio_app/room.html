@@ -1,0 +1,182 @@
+{% extends 'main.html' %}
+
+{% load static %}
+{% load static tailwind_tags %}
+{% tailwind_css %}
+
+{% block content %}
+
+<div class="flex flex-col h-screen">
+    <!-- Chat Header -->
+    <div class="p-4 bg-gray-100 shadow">
+        <h2 class="text-xl font-bold">Chat with {{ other_user.first_name }}</h2>
+    </div>
+    <!-- Chat Messages -->
+    <div class="flex-1 p-4 overflow-y-auto" id="chat-log">
+        {% for message in messages %}
+            <div class="mb-4 {% if message.user == request.user %}text-right{% else %}text-left{% endif %}">
+                <div class="inline-block p-2 rounded-lg {% if message.user == request.user %}bg-blue-500 text-white{% else %}bg-gray-200{% endif %}">
+                    <p>{{ message.content }}</p>
+                    <span class="text-xs text-gray-500">{{ message.timestamp|date:"H:i" }}</span>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    <!-- Chat Input -->
+    <div class="p-4 bg-gray-100 shadow">
+        <div class="flex items-center space-x-4">
+            <input id="chat-message-input" type="text" class="flex-1 p-2 border rounded-lg" placeholder="Type a message">
+            <button id="chat-message-submit" class="p-2 bg-blue-500 text-white rounded-lg">Send</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const userId = "{{ other_user.id }}";
+    const ws = new WebSocket('ws://' + window.location.host + '/ws/chat/' + userId + '/');
+
+    // Function to add a message to the chat log
+    function addMessage(message, isCurrentUser) {
+        const alignmentClass = isCurrentUser ? 'text-right' : 'text-left';
+        const messageContainer = document.createElement('div');
+        messageContainer.className = `mb-4 ${alignmentClass}`;
+        const messageBubble = document.createElement('div');
+        messageBubble.className = 'inline-block p-2 rounded-lg';
+        if (isCurrentUser) {
+            messageBubble.classList.add('bg-blue-500', 'text-white');
+        } else {
+            messageBubble.classList.add('bg-gray-200');
+        }
+        const messageContent = document.createElement('p');
+        messageContent.textContent = message;
+        const messageTimestamp = document.createElement('span');
+        messageTimestamp.className = 'text-xs text-gray-500';
+        messageTimestamp.textContent = (new Date()).toLocaleTimeString();
+        messageBubble.appendChild(messageContent);
+        messageBubble.appendChild(messageTimestamp);
+        messageContainer.appendChild(messageBubble);
+        document.querySelector('#chat-log').appendChild(messageContainer);
+        // Scroll to bottom of chat log
+        document.querySelector('#chat-log').scrollTop = document.querySelector('#chat-log').scrollHeight;
+    }
+
+    ws.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        const message = data.message;
+        const username = data.username;
+        addMessage(message, username === "{{ request.user.username }}");
+    };
+
+    document.querySelector('#chat-message-input').focus();
+    document.querySelector('#chat-message-input').onkeyup = function(e) {
+        if (e.keyCode === 13) {
+            document.querySelector('#chat-message-submit').click();
+        }
+    };
+
+    document.querySelector('#chat-message-submit').onclick = function(e) {
+        const messageInputDom = document.querySelector('#chat-message-input');
+        const message = messageInputDom.value.trim();
+        if (message !== '') {
+            ws.send(JSON.stringify({
+                'message': message,
+                'username': '{{ request.user.username }}',
+            }));
+            messageInputDom.value = '';
+            addMessage(message, true); // Immediately add the sent message to chat log
+        }
+    };
+</script>
+
+<!-- <div id="chat-log">
+    {% for message in messages %}
+        <div>{{ message.user.username }}: {{ message.content }}</div>
+    {% endfor %}
+</div>
+<input id="chat-message-input" type="text" size="100">
+<button id="chat-message-submit">Send</button>
+
+<script>
+    const userId = "{{ other_user.id }}";
+    const ws = new WebSocket('ws://' + window.location.host + '/ws/chat/' + userId + '/');
+
+    ws.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        const message = data.message;
+        const username = data.username;
+        document.querySelector('#chat-log').innerHTML += ('<div>' + username + ': ' + message + '</div>');
+    };
+
+    document.querySelector('#chat-message-input').focus();
+    document.querySelector('#chat-message-input').onkeyup = function(e) {
+        if (e.keyCode === 13) {  // enter, return
+            document.querySelector('#chat-message-submit').click();
+        }
+    };
+
+    document.querySelector('#chat-message-submit').onclick = function(e) {
+        const messageInputDom = document.querySelector('#chat-message-input');
+        const message = messageInputDom.value;
+        ws.send(JSON.stringify({
+            'message': message,
+            'username': '{{ request.user.username }}',
+        }));
+        messageInputDom.value = '';
+    };
+</script> -->
+<!-- {{ chatroom.name }} -->
+
+<!-- <div id="chat-messages">
+    {% for message in messages %}
+        {{ message.user.username }} : {{ message.message_content }} </br>
+    {% endfor %}
+</div>
+<form method="post">
+    <input id="message-input" type="text" name="message" placeholder="Enter message...">
+    <button id="send-button" type="submit">Send</button>
+</form>
+{{ chatroom.slug|json_script:"json-chatroomname" }}
+{{ request.user.username|json_script:"json-username" }}
+<script>
+    const chatRoomName = JSON.parse(document.getElementById('json-chatroomname').textContent)
+    const username = JSON.parse(document.getElementById('json-username').textContent)
+    const ChatSocket = new WebSocket(
+        'ws://'
+        +window.location.host
+        +'/ws/'
+        +chatRoomName
+        +'/'
+    )
+    ChatSocket.onmessage = function(e){
+        // console.log('This is a message')
+        const data = JSON.parse(e.data)
+        if(data.message){
+            console.log('Received message to client is', data.message)
+            let html = data.username + ' : ' + data.message + '</br>'
+            document.getElementById('chat-messages').innerHTML+=html
+        }else{
+            alert('The message was empty')
+        }
+    }
+    ChatSocket.onclose = function(e){
+        console.log('Socket closed')
+    }
+
+    document.getElementById('send-button').onclick = function(e){
+        e.preventDefault()
+        const messageInput = document.getElementById('message-input')
+        const message = messageInput.value
+        console.log(message)
+
+        ChatSocket.send(JSON.stringify({
+            'message': message,
+            'username': username,
+            'room': chatRoomName
+        }))
+        messageInput.value=""
+    }
+
+
+</script> -->
+
+{% endblock %}

@@ -120,7 +120,7 @@ class Booking(models.Model):
 
     def __str__(self):
         return f"Booking by {self.user.username} for {self.time_slot.service.name} on {self.time_slot.date} at {self.time_slot.start_time}"
-    
+
 
 class ChatMessage(models.Model):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='chat_user')
@@ -132,8 +132,10 @@ class ChatMessage(models.Model):
     date = models.DateTimeField(auto_now_add=True)
     mid = ShortUUIDField(max_length=25)
 
-    # def __str__(self):
-    #     return self.sender
+    def __str__(self):
+        return self.user.username
     
     class Meta:
+        ordering = ["-date"]
         verbose_name_plural = 'Chat Message'
+

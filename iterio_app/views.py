@@ -21,6 +21,7 @@ from django.utils.timezone import now
 from django.utils import timezone
 import json
 from django.views.decorators.csrf import csrf_exempt
+from django.db import models
 
 # Create your views here.
 
@@ -254,6 +255,11 @@ def delete_service(request, service_id):
     }
     return render(request, 'iterio_app/delete_service.html', context)
 
+
+
+
+# ----------------------------------------------------------------------Views I created so far------------------------------------------------------------------------------------------------
+# good to go
 def subcategory_selection(request, category):
     # Get all categories for the navbar
     categories = Category.objects.all()
@@ -280,6 +286,7 @@ def subcategory_selection(request, category):
     }
     return render(request, 'iterio_app/subcategory_selection.html', context)
 
+# good to go
 def available_services(request, desired_category, subcategory_id):
     subcategory = get_object_or_404(SubCategory, id=subcategory_id)
     services = subcategory.services.all()
@@ -303,6 +310,7 @@ def available_services(request, desired_category, subcategory_id):
     return render(request, 'iterio_app/available_services.html', context)
 
 # This is for time slots in calendar view in book_service.html
+# This is what the url in events uses to get the time slots available
 def service_slots(request, service_id):
     service = get_object_or_404(Service, id=service_id)
     timeslots = TimeSlot.objects.filter(service=service, date__gte=now().date()).order_by('date', 'start_time')
@@ -327,7 +335,7 @@ def add_time_slot(request, service_id):
             slot = form.save(commit=False)
             slot.service = service
             slot.save()
-            return redirect('time_slots_created', service_id=service.id)  # Redirect to the service detail page or wherever appropriate
+            return redirect('time_slots_created', service_id=service.id)  # Redirect to the time slots created page where user can then update or delete it
     else:
         form = TimeSlotForm()
 
@@ -338,11 +346,11 @@ def add_time_slot(request, service_id):
     return render(request, 'iterio_app/add_time_slot.html', context)
 
 # This is for the service provider to be able to view the time slots he/she created
-# This version does exactly what I need it to 
+# This version does almost evrything I need it to 
 @login_required
 def time_slots_created(request, service_id):
     service = get_object_or_404(Service, id=service_id)
-    timeslots = TimeSlot.objects.filter(service=service, date__gte=timezone.now().date(), end_time__gte=timezone.now().time()).order_by('date', 'start_time')
+    timeslots = TimeSlot.objects.filter(service=service, date__gte=timezone.now().date()).order_by('date', 'start_time')
     today = date.today()
 
     context = {
@@ -378,62 +386,42 @@ def delete_time_slot(request, timeslot_id):
     timeslot.delete()
     return redirect('time_slots_created', service_id=service_id)
 
-# This is for displaying the services listed
+# This allows the logged in user to see the book service page for the service selected
 @login_required
-def services_listed(request, service_id):
+def book_service_page(request, service_id):
     service = get_object_or_404(Service, id=service_id)
+    timeslots = TimeSlot.objects.filter(service=service, date__gte=timezone.now().date()).order_by('date', 'start_time')
+    today = date.today()
 
     context = {
         'service': service,
+        'timeslots': timeslots,
+        'today': today,
     }
     return render(request, 'iterio_app/book_service.html', context)
-# @login_required
-# def book_service(request, service_id):
-#     service = get_object_or_404(Service, id=service_id)
-#     if request.method == 'POST':
-#         form = BookingForm(request.POST)
-#         if form.is_valid():
-#             booking = form.save(commit=False)
-#             booking.user = request.user
-#             booking.service_slot.is_booked = True
-#             booking.service_slot.save()
-#             booking.save()
-#             return redirect('booking_success')
-#     else:
-#         form = BookingForm()
 
-#     context = {
-#         'service': service,
-#         'form': form,
-#     }
-#     return render(request, 'iterio_app/book_service.html', context)
-
-# This is for the user to book the time slot selected
-@csrf_exempt
+@login_required
 def book_time_slot(request):
+    time_slots = TimeSlot.objects.filter(is_booked=False)
     if request.method == 'POST':
         time_slot_id = request.POST.get('time_slot')
-        try:
-            time_slot = TimeSlot.objects.get(id=time_slot_id, is_booked=False)
-            booking = Booking.objects.create(user=request.user, time_slot=time_slot)
-            time_slot.is_booked = True
-            time_slot.save()
-            return JsonResponse({'success': True})
-        except TimeSlot.DoesNotExist:
-            return JsonResponse({'success': False, 'error': 'Time slot does not exist or is already booked.'})
-        except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)})
-    return JsonResponse({'success': False, 'error': 'Invalid request method.'})
+        time_slot = TimeSlot.objects.get(id=time_slot_id)
+        booking = Booking.objects.create(user=request.user, time_slot=time_slot, created_at=date.today())
+        time_slot.is_booked = True
+        time_slot.save()
+        return redirect('my_bookings')
+    
+    context = {
+        'time_slots': time_slots,
+        'booking': booking,
+    }
+    return render(request, 'iterio_app/book_service.html', context)
 
 # This allows the users to see the bookings they have made
 @login_required
 def my_bookings(request):
-    bookings = request.user.bookings.filter(time_slot__date__gte=now().date()).order_by('time_slot__date', 'time_slot__start_time')
-
-    context = {
-        'bookings': bookings
-    }
-    return render(request, 'iterio_app/my_bookings.html', context)
+    bookings = Booking.objects.filter(user=request.user)
+    return render(request, 'iterio_app/my_bookings.html', {'bookings': bookings})
 
 
 def view_provider_profile(request, provider_id):
@@ -467,4 +455,47 @@ def inbox(request):
     context = {
         'chat_message': chat_message,
     }
-    return render(request, 'iterio_app/inbox.html')
+    return render(request, 'iterio_app/inbox.html', context)
+
+def inbox_detail(request, username):
+    user_id = request.user
+    message_list = ChatMessage.objects.filter(
+        id__in = Subquery(
+            User.objects.filter(
+                Q(sender__receiver=user_id) |
+                Q(receiver__sender=user_id)
+            ).distinct().annotate(
+                last_msg=Subquery(
+                    ChatMessage.objects.filter(
+                        Q(sender=OuterRef("id"), receiver=user_id) |
+                        Q(receiver=OuterRef("id"), sender=user_id)
+                    ).order_by("-id")[:1].values_list("id", flat=True)
+                )
+            ).values_list("last_msg", flat=True).order_by("-id")
+        )
+    ).order_by("-id")
+
+    sender = request.user
+    receiver = User.objects.get(username=username)
+    receiver_details = User.objects.get(username=username)
+
+    message_detail = ChatMessage.objects.filter(
+        Q(sender=sender, receiver=receiver) | Q(sender=receiver, receiver=sender)
+    ).order_by("date")
+
+    message_detail.update(is_read=True)
+
+    if message_detail:
+        r = message_detail.first()
+        receiver = User.objects.get(username=r.receiver)
+    else:
+        receiver = User.objects.get(username=username)
+
+    context = {
+        'message_detail': message_detail,
+        'receiver': receiver,
+        'sender': sender,
+        'receiver_details': receiver_details,
+        'message_list': message_list,
+    }
+    return render(request, 'iterio_app/inbox_detail.html', context)
