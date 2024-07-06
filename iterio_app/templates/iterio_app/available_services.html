@@ -20,7 +20,7 @@
                 <p>No services available at this time.</p>
             {% else %}
                 {% for service in page_obj %}
-                <div class="bg-white p-6 rounded-lg shadow-md hover:scale-105">
+                <div class="bg-white p-6 rounded-lg shadow-md mb-4 hover:scale-105">
                     {% if user.is_authenticated %}
                         <a href="{% url 'book_service_page' service.id %}">
                             <h2 class="text-2xl font-semibold mb-2">{{ service.name }}</h2>
