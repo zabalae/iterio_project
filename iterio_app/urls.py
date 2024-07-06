@@ -28,7 +28,7 @@ urlpatterns = [
     path('services/<int:service_id>/time_slots/', views.time_slots_created, name='time_slots_created'),
     path('services/<int:service_id>/add_slot/', views.add_time_slot, name='add_service_slot'),
     path('services/<int:service_id>/slots/', views.service_slots, name='service_slots'),
-    path('book-time-slot/<int:service_id>/', views.book_time_slot, name='book_time_slot'),
+    path('book-time-slot/<int:timeslot_id>/', views.book_time_slot, name='book_time_slot'),
     path('timeslot/<int:timeslot_id>/update/', views.update_time_slot, name='update_time_slot'),
     path('timeslot/<int:timeslot_id>/delete/', views.delete_time_slot, name='delete_time_slot'),
 ]

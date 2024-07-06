@@ -3,9 +3,9 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm, AuthenticationForm
-from .forms import SignUpForm, UpdateUserForm, ChangePasswordForm, UserInfoForm, ServiceForm, TimeSlotForm, BookingForm, DeleteProfileForm
+from .forms import SignUpForm, UpdateUserForm, ChangePasswordForm, UserInfoForm, ServiceForm, TimeSlotForm, DeleteProfileForm
 from django import forms
-from .models import Profile, ServiceProvider, SubCategory, Category, City, Service, TimeSlot, Booking, ChatMessage
+from .models import Profile, ServiceProvider, SubCategory, Category, City, Service, TimeSlot, ChatMessage, Booking
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
@@ -401,18 +401,18 @@ def book_service_page(request, service_id):
     return render(request, 'iterio_app/book_service.html', context)
 
 @login_required
-def book_time_slot(request):
-    time_slots = TimeSlot.objects.filter(is_booked=False)
+def book_time_slot(request, timeslot_id):
+    timeslots = TimeSlot.objects.filter(is_booked=False)
     if request.method == 'POST':
-        time_slot_id = request.POST.get('time_slot')
-        time_slot = TimeSlot.objects.get(id=time_slot_id)
-        booking = Booking.objects.create(user=request.user, time_slot=time_slot, created_at=date.today())
-        time_slot.is_booked = True
-        time_slot.save()
+        timeslot_id = request.POST.get('timeslot')
+        timeslot = TimeSlot.objects.get(id=timeslot_id)
+        booking = Booking.objects.create(user=request.user, timeslot=timeslot, created_at=date.today())
+        timeslot.is_booked = True
+        timeslot.save()
         return redirect('my_bookings')
     
     context = {
-        'time_slots': time_slots,
+        'timeslots': timeslots,
         'booking': booking,
     }
     return render(request, 'iterio_app/book_service.html', context)
@@ -421,7 +421,11 @@ def book_time_slot(request):
 @login_required
 def my_bookings(request):
     bookings = Booking.objects.filter(user=request.user)
-    return render(request, 'iterio_app/my_bookings.html', {'bookings': bookings})
+
+    context = {
+        'bookings': bookings,
+    }
+    return render(request, 'iterio_app/my_bookings.html', context)
 
 
 def view_provider_profile(request, provider_id):

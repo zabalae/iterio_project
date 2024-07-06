@@ -122,19 +122,19 @@
                         {% for timeslot in timeslots %}
                             {% if timeslot.date >= today %}
                             <tr>
-                                <td class="py-2 px-4">{{ time_slot.date }}</td>
+                                <td class="py-2 px-4">{{ timeslot.date }}</td>
                                 <td class="py-2 px-4">{{ timeslot.start_time }}</td>
                                 <td class="py-2 px-4">{{ timeslot.end_time }}</td>
                                 <td class="py-2 px-4">
-                                    {% if time_slot.is_booked %}
+                                    {% if timeslot.is_booked %}
                                         Booked
                                     {% else %}
                                         Available
                                     {% endif %}
                                 </td>
                                 <td class="py-2 px-4">
-                                    {% if not time_slot.is_booked %}
-                                        <form method="post" action="{% url 'book_time_slot' service.id %}">
+                                    {% if not timeslot.is_booked %}
+                                        <form method="post" action="{% url 'book_time_slot' timeslot.id %}">
                                             {% csrf_token %}
                                             <input type="hidden" name="time_slot_id" value="{{ timeslot.id }}">
                                             <button type="submit" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Confirm Booking</button>

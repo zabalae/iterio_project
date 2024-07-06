@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Category, Profile, SubCategory, Service, ServiceProvider, Booking, City, TimeSlot, ChatMessage
+from .models import Category, Profile, SubCategory, Service, ServiceProvider, City, TimeSlot, ChatMessage, Booking
 from django.contrib.auth.models import User
 
 
