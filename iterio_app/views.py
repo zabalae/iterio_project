@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm, AuthenticationForm
 from .forms import SignUpForm, UpdateUserForm, ChangePasswordForm, UserInfoForm, ServiceForm, TimeSlotForm, BookingForm, DeleteProfileForm
 from django import forms
-from .models import Profile, ServiceProvider, SubCategory, Category, City, Service, TimeSlot, Booking
+from .models import Profile, ServiceProvider, SubCategory, Category, City, Service, TimeSlot, Booking, ChatMessage
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
@@ -14,7 +14,14 @@ from django.http import HttpResponseRedirect
 import asyncio
 from mailer import connection
 import datetime
+from datetime import date
 from django.views.decorators.http import require_POST
+from django.db.models import OuterRef, Subquery, Q
+from django.utils.timezone import now
+from django.utils import timezone
+import json
+from django.views.decorators.csrf import csrf_exempt
+from django.db import models
 
 # Create your views here.
 
@@ -284,7 +291,7 @@ def available_services(request, desired_category, subcategory_id):
         services = services.filter(cities__name__icontains=query).distinct()
 
     # Pagination logic
-    paginator = Paginator(services, 5) # Show 5 services per page
+    paginator = Paginator(services, 3) # Show 3 services per page
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
@@ -299,7 +306,7 @@ def available_services(request, desired_category, subcategory_id):
 # This is for time slots in calendar view in book_service.html
 def service_slots(request, service_id):
     service = get_object_or_404(Service, id=service_id)
-    timeslots = TimeSlot.objects.filter(service=service)
+    timeslots = TimeSlot.objects.filter(service=service, date__gte=now().date()).order_by('date', 'start_time')
     events = []
     for timeslot in timeslots:
         start_datetime = datetime.datetime.combine(timeslot.date, timeslot.start_time)
@@ -321,7 +328,7 @@ def add_time_slot(request, service_id):
             slot = form.save(commit=False)
             slot.service = service
             slot.save()
-            return redirect('time_slots_created', service_id=service.id)  # Redirect to the service detail page or wherever appropriate
+            return redirect('time_slots_created', service_id=service.id)  # Redirect to the time slots created page where user can then update or delete it
     else:
         form = TimeSlotForm()
 
@@ -335,11 +342,13 @@ def add_time_slot(request, service_id):
 @login_required
 def time_slots_created(request, service_id):
     service = get_object_or_404(Service, id=service_id)
-    timeslots = TimeSlot.objects.filter(service=service)
+    timeslots = TimeSlot.objects.filter(service=service, date__gte=timezone.now().date()).order_by('date', 'start_time')
+    today = date.today()
 
     context = {
         'service': service,
         'timeslots': timeslots,
+        'today': today,
     }
     return render(request, 'iterio_app/time_slots_created.html', context)
 
@@ -370,54 +379,36 @@ def delete_time_slot(request, timeslot_id):
     return redirect('time_slots_created', service_id=service_id)
 
 @login_required
-def book_service(request, service_id):
+def book_service_page(request, service_id):
     service = get_object_or_404(Service, id=service_id)
-    if request.method == 'POST':
-        form = BookingForm(request.POST)
-        if form.is_valid():
-            booking = form.save(commit=False)
-            booking.user = request.user
-            booking.service_slot.is_booked = True
-            booking.service_slot.save()
-            booking.save()
-            return redirect('booking_success')
-    else:
-        form = BookingForm()
+    timeslots = TimeSlot.objects.filter(service=service, date__gte=timezone.now().date()).order_by('date', 'start_time')
+    today = date.today()
 
     context = {
         'service': service,
-        'form': form,
+        'timeslots': timeslots,
+        'today': today,
     }
     return render(request, 'iterio_app/book_service.html', context)
 
 # This is for the user to book the time slot selected
 @require_POST
 @login_required
-def book_timeslot(request, service_id):
-    timeslot_id = request.POST.get('timeslot_id')
-    print(f"Received booking request for timeslot: {timeslot_id}")
+def book_time_slot(request, timeslot_id):
+    timeslots = TimeSlot.objects.filter(is_booked=False)
+    if request.method == 'POST':
+        timeslot_id = request.POST.get('timeslot')
+        timeslot = TimeSlot.objects.get(id=timeslot_id)
+        booking = Booking.objects.create(user=request.user, timeslot=timeslot, created_at=date.today())
+        timeslot.is_booked = True
+        timeslot.save()
+        return redirect('my_bookings')
     
-    try:
-        timeslot = TimeSlot.objects.get(id=timeslot_id, service_id=service_id)
-        
-        # Check if the timeslot is already booked by the user
-        if Booking.objects.filter(user=request.user, timeslot=timeslot).exists():
-            return JsonResponse({'error': 'You have already booked this timeslot.'}, status=400)
-        
-        # Create a new booking
-        booking = Booking.objects.create(user=request.user, timeslot=timeslot)
-        print(f"Booking created for timeslot: {timeslot_id} by user: {request.user.id}")
-        return JsonResponse({'message': 'Timeslot booked successfully.'})
-    
-    except TimeSlot.DoesNotExist:
-        print(f"Timeslot not found: {timeslot_id}")
-        return JsonResponse({'error': 'Timeslot not found.'}, status=404)
-    except Exception as e:
-        print(f"Error occurred: {e}")
-        return JsonResponse({'error': 'An error occurred while booking the timeslot.'}, status=500)
-
-def booking_success(request):
-    return render(request, 'iterio_app/booking_success.html')
+    context = {
+        'timeslots': timeslots,
+        'booking': booking,
+    }
+    return render(request, 'iterio_app/book_service.html', context)
 
 # This allows the users to see the bookings they have made
 @login_required
@@ -438,3 +429,70 @@ def view_provider_profile(request, provider_id):
         'profile': profile,
     }
     return render(request, 'iterio_app/view_provider_profile.html', context)
+
+@login_required
+def inbox(request):
+    user_id = request.user
+    chat_message = ChatMessage.objects.filter(
+        id__in = Subquery(
+            User.objects.filter(
+                Q(sender__receiver=user_id) |
+                Q(receiver__sender=user_id)
+            ).distinct().annotate(
+                last_msg=Subquery(
+                    ChatMessage.objects.filter(
+                        Q(sender=OuterRef("id"), receiver=user_id) |
+                        Q(receiver=OuterRef("id"), sender=user_id)
+                    ).order_by("-id")[:1].values_list("id", flat=True)
+                )
+            ).values_list("last_msg", flat=True).order_by("-id")
+        )
+    ).order_by("-id")
+
+    context = {
+        'chat_message': chat_message,
+    }
+    return render(request, 'iterio_app/inbox.html', context)
+
+def inbox_detail(request, username):
+    user_id = request.user
+    message_list = ChatMessage.objects.filter(
+        id__in = Subquery(
+            User.objects.filter(
+                Q(sender__receiver=user_id) |
+                Q(receiver__sender=user_id)
+            ).distinct().annotate(
+                last_msg=Subquery(
+                    ChatMessage.objects.filter(
+                        Q(sender=OuterRef("id"), receiver=user_id) |
+                        Q(receiver=OuterRef("id"), sender=user_id)
+                    ).order_by("-id")[:1].values_list("id", flat=True)
+                )
+            ).values_list("last_msg", flat=True).order_by("-id")
+        )
+    ).order_by("-id")
+
+    sender = request.user
+    receiver = User.objects.get(username=username)
+    receiver_details = User.objects.get(username=username)
+
+    message_detail = ChatMessage.objects.filter(
+        Q(sender=sender, receiver=receiver) | Q(sender=receiver, receiver=sender)
+    ).order_by("date")
+
+    message_detail.update(is_read=True)
+
+    if message_detail:
+        r = message_detail.first()
+        receiver = User.objects.get(username=r.receiver)
+    else:
+        receiver = User.objects.get(username=username)
+
+    context = {
+        'message_detail': message_detail,
+        'receiver': receiver,
+        'sender': sender,
+        'receiver_details': receiver_details,
+        'message_list': message_list,
+    }
+    return render(request, 'iterio_app/inbox_detail.html', context)
