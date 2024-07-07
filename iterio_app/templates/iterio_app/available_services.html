@@ -20,9 +20,9 @@
                 <p>No services available at this time.</p>
             {% else %}
                 {% for service in page_obj %}
-                <div class="bg-white p-6 rounded-lg shadow-md hover:scale-105">
+                <div class="bg-white p-6 rounded-lg shadow-md mb-4 hover:scale-105">
                     {% if user.is_authenticated %}
-                        <a href="{% url 'book_service' service.id %}">
+                        <a href="{% url 'book_service_page' service.id %}">
                             <h2 class="text-2xl font-semibold mb-2">{{ service.name }}</h2>
                             <p class="mb-2"><strong>Price Range:</strong> {{ service.price_range }}</p>
                             <p class="mb-2"><strong>Cities:</strong>
@@ -55,27 +55,18 @@
             {% endif %}
         </div>
         <!-- Pagination links -->
-        <div class="mt-8">
-            <span class="text-sm">
-                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
-            </span>
-            <div class="inline-block">
+        <div class="mt-8 flex justify-center">
+            <div class="inline-flex items-center space-x-4">
                 {% if page_obj.has_previous %}
-                    <a href="?page=1&q={{ query }}" class="text-sm text-gray-700 hover:text-gray-900">First</a>
-                    <a href="?page={{ page_obj.previous_page_number }}&q={{ query }}" class="text-sm text-gray-700 hover:text-gray-900">&laquo; Previous</a>
+                    <a href="?page=1" class="text-sm text-gray-700 hover:text-gray-900 border border-gray-300 rounded-md px-3 py-1">First</a>
+                    <a href="?page={{ page_obj.previous_page_number }}" class="text-sm text-gray-700 hover:text-gray-900 border border-gray-300 rounded-md px-3 py-1">&laquo; Previous</a>
                 {% endif %}
         
-                {% for num in page_obj.paginator.page_range %}
-                    {% if page_obj.number == num %}
-                        <span class="text-sm text-gray-700 font-bold">{{ num }}</span>
-                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                        <a href="?page={{ num }}&q={{ query }}" class="text-sm text-gray-700 hover:text-gray-900">{{ num }}</a>
-                    {% endif %}
-                {% endfor %}
-        
+                <span class="text-sm text-gray-700">Page: {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                
                 {% if page_obj.has_next %}
-                    <a href="?page={{ page_obj.next_page_number }}&q={{ query }}" class="text-sm text-gray-700 hover:text-gray-900">Next &raquo;</a>
-                    <a href="?page={{ page_obj.paginator.num_pages }}&q={{ query }}" class="text-sm text-gray-700 hover:text-gray-900">Last</a>
+                    <a href="?page={{ page_obj.next_page_number }}" class="text-sm text-gray-700 hover:text-gray-900 border border-gray-300 rounded-md px-3 py-1">Next &raquo;</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}" class="text-sm text-gray-700 hover:text-gray-900 border border-gray-300 rounded-md px-3 py-1">Last</a>
                 {% endif %}
             </div>
         </div>

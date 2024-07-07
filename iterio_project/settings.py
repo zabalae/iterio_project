@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'iterio_app.apps.IterioAppConfig',
     'tailwind',
     'theme',
+    'channels',
 ]
 
 TAILWIND_APP_NAME = 'theme'
@@ -81,7 +82,13 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'iterio_project.wsgi.application'
+ASGI_APPLICATION = 'iterio_project.asgi.application'
 
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer'
+    }
+}
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases

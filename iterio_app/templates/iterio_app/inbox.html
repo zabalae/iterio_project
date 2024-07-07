@@ -1,0 +1,84 @@
+{% extends 'main.html' %}
+
+{% load static %}
+{% load static tailwind_tags %}
+{% tailwind_css %}
+
+{% block content %}
+<div class="flex h-screen">
+    <!-- Messages Inbox -->
+    <div class="w-1/3 border-r border-gray-300 flex flex-col">
+        <div class="flex items-center justify-between p-4 border-b border-gray-300 bg-white">
+            <div class="hidden">
+                <input id="autocomplete-input" type="text" placeholder="Search" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <h2 class="text-2xl font-semibold">Chats</h2>
+            <span class="icon-feather-edit text-xl cursor-pointer"></span>
+        </div>
+        <div class="overflow-y-auto p-4 flex-1 bg-gray-50">
+            <ul class="divide-y divide-gray-200">
+                {% for m in chat_message %}
+                <li class="py-4">
+                    {% if request.user == m.sender %}
+                    <a href="{% url 'inbox_detail' m.receiver.username %}" class="flex items-center space-x-3 hover:bg-gray-100 p-2 rounded-md transition">
+                        <div class="w-12 h-12">
+                            {% if m.receiver.profile.profile_picture %}
+                            <img src="{{ m.receiver.profile.profile_picture.url }}" alt="Receiver's Profile Picture" class="w-12 h-12 rounded-full object-cover">
+                            {% else %}
+                            <img src="{% static 'images/default_profile.png' %}" alt="Default Profile Picture" class="w-12 h-12 rounded-full object-cover">
+                            {% endif %}
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex justify-between items-center">
+                                <h5 class="font-bold">{{ m.receiver.first_name }} {{ m.receiver.last_name }}</h5>
+                                <span class="text-gray-500 text-sm">{{ m.date|timesince }} ago</span>
+                            </div>
+                            <p class="text-gray-700">{{ m.message|truncatechars:40 }}</p>
+                        </div>
+                    </a>
+                    {% endif %}
+                    {% if request.user == m.receiver %}
+                    <a href="{% url 'inbox_detail' m.sender.username %}" class="flex items-center space-x-3 hover:bg-gray-100 p-2 rounded-md transition">
+                        <div class="w-12 h-12">
+                            {% if m.sender.profile.profile_picture %}
+                            <img src="{{ m.sender.profile.profile_picture.url }}" alt="Sender's Profile Picture" class="w-12 h-12 rounded-full object-cover">
+                            {% else %}
+                            <img src="{% static 'images/default_profile.png' %}" alt="Default Profile Picture" class="w-12 h-12 rounded-full object-cover">
+                            {% endif %}
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex justify-between items-center">
+                                <h5 class="font-bold">{{ m.sender.first_name }} {{ m.sender.last_name }}</h5>
+                                <span class="text-gray-500 text-sm">{{ m.date|timesince }} ago</span>
+                            </div>
+                            <p class="text-gray-700">{{ m.message|truncatechars:40 }}</p>
+                        </div>
+                    </a>
+                    {% endif %}
+                </li>
+                {% empty %}
+                <li class="text-center text-gray-500 py-4">
+                    No messages yet
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <!-- Message Content -->
+    <div class="flex-1 flex flex-col">
+        <div class="border-b border-gray-300 pb-4 mb-4 p-4 bg-white">
+            <h4 class="text-xl font-bold">Start a new conversation</h4>
+        </div>
+        <div class="flex-1 overflow-y-auto p-4 bg-gray-50" style="max-height: calc(100vh - 150px);">
+            <div class="space-y-4" id="chat-messages">
+                <!-- Message content will be displayed here -->
+            </div>
+        </div>
+        <div class="p-4 bg-white">
+            <textarea id="chat-input" cols="1" rows="1" placeholder="Write a message..." class="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+            <button id="send-btn" class="bg-blue-500 text-white px-4 py-2 rounded-lg mt-2 hover:bg-blue-600">Send</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
