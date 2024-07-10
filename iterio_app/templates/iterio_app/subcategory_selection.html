@@ -11,7 +11,7 @@
     <nav class="bg-gray-200 shadow rounded-lg mb-8">
         <div class="max-w-screen-xl px-4 py-3 mx-auto">
             <div class="flex items-center justify-center overflow-x-auto custom-scrollbar" id="category-scroll-container">
-                <ul class="flex justify-start space-x-4 whitespace-nowrap">
+                <ul class="flex justify-start space-x-4 whitespace-nowrap" style="min-width: max-content;">
                     {% for category in categories %}
                     <li class="nav-item">
                         <a href="?category={{ category.id }}" class="text-gray-800 hover:text-gray-600 transition duration-300">{{ category.name }}</a>
@@ -59,6 +59,11 @@
 
     .custom-scrollbar::-webkit-scrollbar-thumb:hover {
         background-color: #051b2c;
+    }
+
+    .nav-item a {
+        display: inline-block;
+        padding: 10px;
     }
 </style>
 
