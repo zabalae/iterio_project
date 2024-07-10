@@ -505,3 +505,13 @@ def send_notification(user=None, sender=None, message=None, notification_type=No
         notification_type=notification_type,
     )
     return notification
+
+@login_required
+@require_POST
+def cancel_booking(request, booking_id):
+    booking = get_object_or_404(Booking, id=booking_id, user=request.user)
+    timeslot = booking.timeslot
+    booking.delete()
+    timeslot.is_booked = False
+    timeslot.save()
+    return redirect('my_bookings')
