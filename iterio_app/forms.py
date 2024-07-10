@@ -133,13 +133,20 @@ class ServiceForm(forms.ModelForm):
 class BookingForm(forms.ModelForm):
     class Meta:
         model = Booking
-        fields = ['timeslot', 'user', 'created_at']
+        fields = ['timeslot']
+        # widgets = {
+        #     'timeslot': timeslot,
+        # }
 
     def __init__(self, *args, **kwargs):
-        service_id = kwargs.pop('service_id', None)
-        super(BookingForm, self).__init__(*args, **kwargs)
-        if service_id:
-            self.fields['timeslot'].queryset = TimeSlot.objects.filter(service__id=service_id, is_booked=False)
+        super().__init__(*args, **kwargs)
+        self.fields['timeslot'].queryset = TimeSlot.objects.filter(booked=False)
+
+    # def __init__(self, *args, **kwargs):
+    #     service_id = kwargs.pop('service_id', None)
+    #     super(BookingForm, self).__init__(*args, **kwargs)
+    #     if service_id:
+    #         self.fields['timeslot'].queryset = TimeSlot.objects.filter(service__id=service_id, is_booked=False)
 
 
 class TimeSlotForm(forms.ModelForm):

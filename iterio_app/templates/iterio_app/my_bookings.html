@@ -1,5 +1,9 @@
 {% extends 'main.html' %}
 
+{% load static %}
+{% load static tailwind_tags %}
+{% tailwind_css %}
+
 {% block content %}
 <div class="container mx-auto px-4 py-8">
     <h1 class="text-3xl font-bold mb-6">My Bookings</h1>
@@ -32,3 +36,12 @@
     {% endif %}
 </div>
 {% endblock %}
+
+
+<!-- <h1>My Bookings</h1>
+{% for booking in bookings %}
+<div>
+    <p>Service: {{ booking.time_slot.service.name }}</p>
+    <p>Time: {{ booking.time_slot.start_time }} - {{ booking.time_slot.end_time }}</p>
+</div>
+{% endfor %} -->

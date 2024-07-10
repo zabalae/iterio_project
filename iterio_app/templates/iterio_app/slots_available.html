@@ -1,0 +1,13 @@
+{% load static %}
+
+<div class="time-slots-container">
+    <h2>Available Time Slots for {{ date }}</h2>
+    {% for time_slot in time_slots %}
+    <div>
+        <p>{{ time_slot.start_time }} - {{ time_slot.end_time }}</p>
+        <button class="book-time-slot" data-id="{{ time_slot.id }}">Book</button>
+    </div>
+    {% empty %}
+        <p>No available time slots for {{ date }}</p>
+    {% endfor %}
+</div>

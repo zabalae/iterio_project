@@ -5,12 +5,12 @@ from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm, AuthenticationForm
 from .forms import SignUpForm, UpdateUserForm, ChangePasswordForm, UserInfoForm, ServiceForm, TimeSlotForm, BookingForm, DeleteProfileForm
 from django import forms
-from .models import Profile, ServiceProvider, SubCategory, Category, City, Service, TimeSlot, Booking, ChatMessage
+from .models import Profile, ServiceProvider, SubCategory, Category, City, Service, TimeSlot, Booking, ChatMessage, Notification
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.urls import reverse
-from django.http import HttpResponseRedirect
+from django.http import HttpResponse
 import asyncio
 from mailer import connection
 import datetime
@@ -22,8 +22,11 @@ from django.utils import timezone
 import json
 from django.views.decorators.csrf import csrf_exempt
 from django.db import models
+from django.template.loader import render_to_string
 
-# Create your views here.
+
+# Notification keys
+noti_new_message = "New Message"
 
 
 def home(request):
@@ -395,20 +398,18 @@ def book_service_page(request, service_id):
 @require_POST
 @login_required
 def book_time_slot(request, timeslot_id):
-    timeslots = TimeSlot.objects.filter(is_booked=False)
     if request.method == 'POST':
-        timeslot_id = request.POST.get('timeslot')
-        timeslot = TimeSlot.objects.get(id=timeslot_id)
-        booking = Booking.objects.create(user=request.user, timeslot=timeslot, created_at=date.today())
-        timeslot.is_booked = True
-        timeslot.save()
-        return redirect('my_bookings')
-    
-    context = {
-        'timeslots': timeslots,
-        'booking': booking,
-    }
-    return render(request, 'iterio_app/book_service.html', context)
+        timeslot = get_object_or_404(TimeSlot, id=timeslot_id)
+        if not timeslot.is_booked:
+            booking = Booking(user=request.user, timeslot=timeslot)
+            timeslot.is_booked = True
+            timeslot.save()
+            booking.save()
+            return redirect('my_bookings')
+            # return JsonResponse({'status': 'success'}, status=200)
+        else:
+            return JsonResponse({'status': 'error', 'message': 'Time slot already booked'}, status=400)
+    return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
 
 # This allows the users to see the bookings they have made
 @login_required
@@ -496,3 +497,11 @@ def inbox_detail(request, username):
         'message_list': message_list,
     }
     return render(request, 'iterio_app/inbox_detail.html', context)
+
+def send_notification(user=None, sender=None, message=None, notification_type=None):
+    notification = Notification.objects.create(
+        user=user,
+        sender=sender,
+        notification_type=notification_type,
+    )
+    return notification

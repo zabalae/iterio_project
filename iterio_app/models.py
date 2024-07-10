@@ -129,5 +129,23 @@ class ChatMessage(models.Model):
         ordering = ["-date"]
         verbose_name_plural = 'Chat Message'
 
+NOTIFICATION_TYPE = (
+    ('New Message', 'New Message'),
+)
 
+
+class Notification(models.Model):
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="noti_user")
+    sender = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="noti_sender")
+    message = models.ForeignKey(ChatMessage, on_delete=models.SET_NULL, null=True, blank=True, related_name="noti_message")
+    notification_type = models.CharField(max_length=100, choices=NOTIFICATION_TYPE, default="none")
+    is_read = models.BooleanField(default=False)
+    date = models.DateTimeField(auto_now_add=True)
+    nid = ShortUUIDField(max_length=25)
     
+    class Meta:
+        ordering = ["-date"]
+        verbose_name_plural = "Notification"
+
+    def __str__(self):
+        return f"{self.user.username} - {self.notification_type}" 
