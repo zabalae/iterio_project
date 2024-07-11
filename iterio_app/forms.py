@@ -3,7 +3,7 @@ from django.contrib.auth.forms import UserCreationForm, UserChangeForm, SetPassw
 from django import forms
 from django.forms import SelectMultiple
 
-from .models import Profile, City, Service, Category, SubCategory, Booking, TimeSlot
+from .models import Profile, City, Service, Category, SubCategory, Booking, TimeSlot, ChatMessage
 
 
 class UserInfoForm(forms.ModelForm):
@@ -157,3 +157,8 @@ class DeleteProfileForm(forms.Form):
         }),
         label='Password'
     )
+
+class ChatMessageForm(forms.ModelForm):
+    class Meta:
+        model = ChatMessage
+        fields = ['message']
