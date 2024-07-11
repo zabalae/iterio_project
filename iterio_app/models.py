@@ -113,7 +113,6 @@ class Booking(models.Model):
 
 
 class ChatMessage(models.Model):
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='chat_user')
     sender = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='sender')
     receiver = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='receiver')
 
@@ -123,11 +122,13 @@ class ChatMessage(models.Model):
     mid = ShortUUIDField(max_length=25)
 
     def __str__(self):
-        return self.user.username
-    
+        sender_username = self.sender.username if self.sender else "Unknown"
+        receiver_username = self.receiver.username if self.receiver else "Unknown"
+        return f"From {sender_username} to {receiver_username}"
+
     class Meta:
         ordering = ["-date"]
-        verbose_name_plural = 'Chat Message'
+        verbose_name_plural = 'Chat Messages'
 
 
     
