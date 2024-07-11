@@ -3,27 +3,31 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm, AuthenticationForm
-from .forms import SignUpForm, UpdateUserForm, ChangePasswordForm, UserInfoForm, ServiceForm, TimeSlotForm, BookingForm, DeleteProfileForm
+from .forms import SignUpForm, UpdateUserForm, ChangePasswordForm, UserInfoForm, ServiceForm, TimeSlotForm, BookingForm, DeleteProfileForm, ChatMessageForm
 from django import forms
-from .models import Profile, ServiceProvider, SubCategory, Category, City, Service, TimeSlot, Booking, ChatMessage
+from .models import Profile, ServiceProvider, SubCategory, Category, City, Service, TimeSlot, Booking, ChatMessage, Notification
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse
 from django.urls import reverse
+from django.http import HttpResponse
 import asyncio
 from mailer import connection
 import datetime
 from datetime import date
 from django.views.decorators.http import require_POST
-from django.db.models import OuterRef, Subquery, Q
+from django.db.models import OuterRef, Subquery, Q, F, Func, ExpressionWrapper, Value, DateTimeField
 from django.utils.timezone import now
 from django.utils import timezone
 import json
 from django.views.decorators.csrf import csrf_exempt
 from django.db import models
+from django.db.models.functions import Concat
 from django.template.loader import render_to_string
 
-# Create your views here.
+
+# Notification keys
+noti_new_message = "New Message"
 
 
 def home(request):
@@ -383,11 +387,13 @@ def book_service_page(request, service_id):
     service = get_object_or_404(Service, id=service_id)
     timeslots = TimeSlot.objects.filter(service=service, date__gte=timezone.now().date()).order_by('date', 'start_time')
     today = date.today()
+    current_datetime = timezone.now()
 
     context = {
+        'today': today,
         'service': service,
         'timeslots': timeslots,
-        'today': today,
+        'current_datetime': current_datetime,
     }
     return render(request, 'iterio_app/book_service.html', context)
 
@@ -411,10 +417,38 @@ def book_time_slot(request, timeslot_id):
 # This allows the users to see the bookings they have made
 @login_required
 def my_bookings(request):
-    bookings = Booking.objects.filter(user=request.user)
+    current_datetime = timezone.now()
+    user_bookings = Booking.objects.filter(user=request.user)
+
+    # Combine date and start_time into a DateTimeField using Concat
+    upcoming_bookings = user_bookings.annotate(
+        combined_datetime=ExpressionWrapper(
+            Concat(
+                F('timeslot__date'),
+                Value(' '),
+                F('timeslot__start_time'),
+                output_field=DateTimeField()
+            ),
+            output_field=DateTimeField()
+        )
+    ).filter(combined_datetime__gte=current_datetime)
+
+    past_bookings = user_bookings.annotate(
+        combined_datetime=ExpressionWrapper(
+            Concat(
+                F('timeslot__date'),
+                Value(' '),
+                F('timeslot__start_time'),
+                output_field=DateTimeField()
+            ),
+            output_field=DateTimeField()
+        )
+    ).filter(combined_datetime__lt=current_datetime)
 
     context = {
-        'bookings': bookings
+        'user_bookings': user_bookings,
+        'upcoming_bookings': upcoming_bookings,
+        'past_bookings': past_bookings,
     }
     return render(request, 'iterio_app/my_bookings.html', context)
 
@@ -452,6 +486,7 @@ def inbox(request):
     }
     return render(request, 'iterio_app/inbox.html', context)
 
+@login_required
 def inbox_detail(request, username):
     user_id = request.user
     message_list = ChatMessage.objects.filter(
@@ -494,6 +529,14 @@ def inbox_detail(request, username):
         'message_list': message_list,
     }
     return render(request, 'iterio_app/inbox_detail.html', context)
+
+def send_notification(user=None, sender=None, message=None, notification_type=None):
+    notification = Notification.objects.create(
+        user=user,
+        sender=sender,
+        notification_type=notification_type,
+    )
+    return notification
 
 @login_required
 @require_POST
