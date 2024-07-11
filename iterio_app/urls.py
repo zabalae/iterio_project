@@ -32,4 +32,5 @@ urlpatterns = [
     path('services/<int:service_id>/slots/', views.service_slots, name='service_slots'),
     path('timeslot/<int:timeslot_id>/update/', views.update_time_slot, name='update_time_slot'),
     path('timeslot/<int:timeslot_id>/delete/', views.delete_time_slot, name='delete_time_slot'),
+    # path('available_time_slots/<int:service_id>/', views.available_time_slots, name='available_time_slots'),
 ]
