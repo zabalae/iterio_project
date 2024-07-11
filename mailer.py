@@ -174,7 +174,7 @@ class connection:
             await connection.clean()
             return (False, invalid_email)
 
-    async def welcome_msg(username: str, user_email: str = None) -> tuple:
+    async def welcome_msg(username: str, user_email: str = None):
         """ Sends a welcome email to user_email
             Args:
                 username: the name of the user
@@ -206,38 +206,39 @@ class connection:
         if not user_email:
             print("\n\n\t>>> No Email Given <<<\n")
             return (username, "Fail - No email found")
-        content = await connection.read_json()
-        try:
-            await connection.clean()
-            success_count = send_mail(
-                f"Welcome to Iterio {username}",
-                welcome_msg,
-                "iterio.supp@gmail.com",
-                [user_email],
-                fail_silently=False,
-            )
-            status, data = await connection.is_email_valid()
-            if success_count > 0 and status:
-                print("Email sent successfully!")
-            else:
-                if data == user_email:
-                    print("\t###############################################################")
-                    print(f"\t|\t\t\tFAILED\n\t|--->Email, send unsuccessfully to: {user_email}")
-                    print("\t###############################################################")
-                    content[f"{username}.{user_email}"] = {'Status': 'Invalid',
-                                                           'Username': username,
-                                                           'Email' : user_email,
-                                                           'Filter-Method': 'User-or-Email'}
-                else:
-                    content[f"Last-register-user-{username}.{data}"] = {'Status': 'Undetermine-user',
-                                                  'Username': f'Last-register-user-{username}',
-                                                  'Email': data,
-                                                  'Filter-Method': "Email"}
-                await connection.save_json(content)
-        except smtplib.SMTPException as e:
-            print(f"FAIL sending mail:\n{e}")  
-        finally:
-            return (username, status)
+        #content = await connection.read_json()
+        # try:
+        #     await connection.clean()
+        success_count = send_mail(
+            f"Welcome to Iterio {username}",
+            welcome_msg,
+            "iterio.supp@gmail.com",
+            [user_email],
+            fail_silently=False,
+        )
+            #status, data = await connection.is_email_valid()
+        if success_count > 0:# and status:
+            print("Email sent successfully!")
+        else:
+            print("Fail Sending Email")
+                # if data == user_email:
+                #     print("\t###############################################################")
+                #     print(f"\t|\t\t\tFAILED\n\t|--->Email, send unsuccessfully to: {user_email}")
+                #     print("\t###############################################################")
+                #     content[f"{username}.{user_email}"] = {'Status': 'Invalid',
+                #                                            'Username': username,
+                #                                            'Email' : user_email,
+                #                                            'Filter-Method': 'User-or-Email'}
+                # else:
+                #     content[f"Last-register-user-{username}.{data}"] = {'Status': 'Undetermine-user',
+                #                                   'Username': f'Last-register-user-{username}',
+                #                                   'Email': data,
+                #                                   'Filter-Method': "Email"}
+                # await connection.save_json(content)
+        # except smtplib.SMTPException as e:
+        #     print(f"FAIL sending mail:\n{e}")  
+        # finally:
+        #     return (username, status)
 if __name__ == '__main__':
     pass
     # UN COMMENT FOR TESTING

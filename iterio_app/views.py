@@ -76,15 +76,16 @@ def registerUser(request):
             username = form.cleaned_data['username']
             password = form.cleaned_data['password1']
             user_email = form.cleaned_data['email']
-            #asyncio.run(connection.welcome_msg(username, user_email))
+            asyncio.run(connection.welcome_msg(username, user_email))
             user = authenticate(username=username, password=password)
             login(request, user)
             messages.success(request, ("Username Created - Please Fill Out Your User Info Below..."))
             return redirect('update_user')
         else:
+            email = form.cleaned_data.get('email', "invalid")
             if not form.cleaned_data['username']:
                 context["invalid_username"] = True
-            if form.cleaned_data['email'] in all_emails:
+            if email in all_emails or email == 'invalid':
                 context['invalid_email'] = True
             messages.success(request, ("Please try again..."))
             return render(request, 'iterio_app/register.html', context)

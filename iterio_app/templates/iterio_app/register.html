@@ -31,7 +31,7 @@
                     <label for="{{ form.email.id_for_label }}" class="block text-sm font-medium text-gray-700">Email Address</label>
                     {{ form.email }}
                     {% if invalid_email %}
-                        <p class="text-red-600 text-sm">Oops! This email is already registered.</p>
+                        <p class="text-red-600 text-sm">Oops! This email is already registered or has invalid format.</p>
                     {% endif %}
                 </div>
 
