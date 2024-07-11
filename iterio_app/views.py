@@ -3,9 +3,9 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm, AuthenticationForm
-from .forms import SignUpForm, UpdateUserForm, ChangePasswordForm, UserInfoForm, ServiceForm, TimeSlotForm, BookingForm, DeleteProfileForm, ChatMessageForm
+from .forms import SignUpForm, UpdateUserForm, ChangePasswordForm, UserInfoForm, ServiceForm, TimeSlotForm, BookingForm, DeleteProfileForm, ChatMessagesForm
 from django import forms
-from .models import Profile, ServiceProvider, SubCategory, Category, City, Service, TimeSlot, Booking, ChatMessage, Notification
+from .models import Profile, ServiceProvider, SubCategory, Category, City, Service, TimeSlot, Booking, ChatMessage#, Notification
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
@@ -488,26 +488,33 @@ def inbox(request):
 
 @login_required
 def inbox_detail(request, username):
-    user_id = request.user
-    message_list = ChatMessage.objects.filter(
-        id__in = Subquery(
-            User.objects.filter(
-                Q(sender__receiver=user_id) |
-                Q(receiver__sender=user_id)
-            ).distinct().annotate(
-                last_msg=Subquery(
-                    ChatMessage.objects.filter(
-                        Q(sender=OuterRef("id"), receiver=user_id) |
-                        Q(receiver=OuterRef("id"), sender=user_id)
-                    ).order_by("-id")[:1].values_list("id", flat=True)
-                )
-            ).values_list("last_msg", flat=True).order_by("-id")
-        )
-    ).order_by("-id")
-
     sender = request.user
-    receiver = User.objects.get(username=username)
-    receiver_details = User.objects.get(username=username)
+    receiver = get_object_or_404(User, username=username)
+
+    if request.method == 'POST':
+        form = ChatMessagesForm(request.POST)
+        if form.is_valid():
+            chat_message = form.save(commit=False)
+            chat_message.sender = sender
+            chat_message.receiver = receiver
+            chat_message.save()
+            return redirect('inbox_detail', username=username)
+    else:
+        form = ChatMessagesForm()
+
+    # Get all unique chat partners
+    open_chats = ChatMessage.objects.filter(
+        Q(sender=sender) | Q(receiver=sender)
+    ).values('sender', 'receiver').distinct()
+
+    # Build a list of unique users
+    chat_partners = []
+    for chat in open_chats:
+        if chat['sender'] == sender.id:
+            chat_partners.append(chat['receiver'])
+        else:
+            chat_partners.append(chat['sender'])
+    chat_partners = User.objects.filter(id__in=chat_partners)
 
     message_detail = ChatMessage.objects.filter(
         Q(sender=sender, receiver=receiver) | Q(sender=receiver, receiver=sender)
@@ -515,28 +522,22 @@ def inbox_detail(request, username):
 
     message_detail.update(is_read=True)
 
-    if message_detail:
-        r = message_detail.first()
-        receiver = User.objects.get(username=r.receiver)
-    else:
-        receiver = User.objects.get(username=username)
-
     context = {
         'message_detail': message_detail,
         'receiver': receiver,
         'sender': sender,
-        'receiver_details': receiver_details,
-        'message_list': message_list,
+        'chat_partners': chat_partners,
+        'form': form,
     }
     return render(request, 'iterio_app/inbox_detail.html', context)
 
-def send_notification(user=None, sender=None, message=None, notification_type=None):
-    notification = Notification.objects.create(
-        user=user,
-        sender=sender,
-        notification_type=notification_type,
-    )
-    return notification
+# def send_notification(user=None, sender=None, message=None, notification_type=None):
+#     notification = Notification.objects.create(
+#         user=user,
+#         sender=sender,
+#         notification_type=notification_type,
+#     )
+#     return notification
 
 @login_required
 @require_POST

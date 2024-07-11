@@ -158,7 +158,14 @@ class DeleteProfileForm(forms.Form):
         label='Password'
     )
 
-class ChatMessageForm(forms.ModelForm):
+class ChatMessagesForm(forms.ModelForm):
     class Meta:
         model = ChatMessage
         fields = ['message']
+        widgets = {
+            'message': forms.Textarea(attrs={
+                'class': 'form-control block px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm w-full',
+                'placeholder': 'Message...',
+                'rows': 1,
+            }),
+        }
