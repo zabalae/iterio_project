@@ -1,0 +1,76 @@
+{% extends 'main.html' %}
+
+{% load static %}
+{% load static tailwind_tags %}
+{% tailwind_css %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-6">My Bookings</h1>
+    
+    <!-- Upcoming Bookings Table -->
+    <h2 class="text-2xl font-bold mb-4">Upcoming Bookings</h2>
+    {% if upcoming_bookings %}
+    <table class="min-w-full bg-white shadow-md rounded-lg mb-12">
+        <thead>
+            <tr>
+                <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-600">Service</th>
+                <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-600">Date</th>
+                <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-600">Start Time</th>
+                <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-600">End Time</th>
+                <!-- <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-600">Booked On</th> -->
+                <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-600">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for booking in upcoming_bookings %}
+            <tr>
+                <td class="py-2 px-4">{{ booking.timeslot.service.name }}</td>
+                <td class="py-2 px-4">{{ booking.timeslot.date }}</td>
+                <td class="py-2 px-4">{{ booking.timeslot.start_time }}</td>
+                <td class="py-2 px-4">{{ booking.timeslot.end_time }}</td>
+                <!-- <td class="py-2 px-4">{{ booking.created_at }}</td> -->
+                <td class="py-2 px-4">
+                    <form method="post" action="{% url 'cancel_booking' booking.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded cancel-booking">Cancel</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="text-gray-700">You have no upcoming bookings.</p>
+    {% endif %}
+
+    <!-- Past Bookings Table -->
+    <h2 class="text-2xl font-bold mt-4 mb-4">Past Bookings</h2>
+    {% if past_bookings %}
+    <table class="min-w-full bg-white shadow-md rounded-lg">
+        <thead>
+            <tr>
+                <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-600">Service</th>
+                <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-600">Date</th>
+                <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-600">Start Time</th>
+                <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-600">End Time</th>
+                <!-- <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-600">Booked On</th> -->
+            </tr>
+        </thead>
+        <tbody>
+            {% for booking in past_bookings %}
+            <tr>
+                <td class="py-2 px-4">{{ booking.timeslot.service.name }}</td>
+                <td class="py-2 px-4">{{ booking.timeslot.date }}</td>
+                <td class="py-2 px-4">{{ booking.timeslot.start_time }}</td>
+                <td class="py-2 px-4">{{ booking.timeslot.end_time }}</td>
+                <!-- <td class="py-2 px-4">{{ booking.created_at }}</td> -->
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="text-gray-700">You have no past bookings.</p>
+    {% endif %}
+</div>
+{% endblock %}

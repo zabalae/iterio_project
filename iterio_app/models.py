@@ -3,6 +3,7 @@ import datetime
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.utils import timezone
+from shortuuidfield import ShortUUIDField
 
 class City(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -91,18 +92,8 @@ class ServiceProvider(models.Model):
     def __str__(self):
         return self.user.username
 
-# Booking model
-# class Booking(models.Model):
-#     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='bookings')
-#     service = models.ForeignKey(Service, on_delete=models.CASCADE, related_name='bookings')
-#     provider = models.ForeignKey(ServiceProvider, on_delete=models.CASCADE, related_name='bookings')
-#     date = models.DateTimeField()
-#     notes = models.TextField(blank=True)
-
-#     def __str__(self):
-#         return f"Booking by {self.user.username} for {self.service.name} with {self.provider.user.username}"
-class ServiceSlot(models.Model):
-    service = models.ForeignKey(Service, on_delete=models.CASCADE, related_name='slots')
+class TimeSlot(models.Model):
+    service = models.ForeignKey(Service, on_delete=models.CASCADE, related_name='time_slot_service')
     date = models.DateField()
     start_time = models.TimeField()
     end_time = models.TimeField()
@@ -113,10 +104,31 @@ class ServiceSlot(models.Model):
 
 
 class Booking(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    service_slot = models.ForeignKey(ServiceSlot, on_delete=models.CASCADE, related_name='bookings', default=1)
+    user = models.ForeignKey(User, related_name='bookings', on_delete=models.CASCADE)
+    timeslot = models.ForeignKey(TimeSlot, on_delete=models.CASCADE, related_name='bookings')
     created_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
-        return f"Booking by {self.user.username} for {self.service_slot.service.name} on {self.service_slot.date} at {self.service_slot.start_time}"
+        return f"Booking by {self.user.username} for {self.timeslot.service.name} on {self.timeslot.date} at {self.timeslot.start_time}"
+
+
+class ChatMessage(models.Model):
+    sender = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='sender')
+    receiver = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='receiver')
+
+    message = models.CharField(max_length=1000000)
+    is_read = models.BooleanField(default=False)
+    date = models.DateTimeField(auto_now_add=True)
+    mid = ShortUUIDField(max_length=25)
+
+    def __str__(self):
+        sender_username = self.sender.username if self.sender else "Unknown"
+        receiver_username = self.receiver.username if self.receiver else "Unknown"
+        return f"From {sender_username} to {receiver_username}"
+
+    class Meta:
+        ordering = ["-date"]
+        verbose_name_plural = 'Chat Messages'
+
+
     
