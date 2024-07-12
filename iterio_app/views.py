@@ -2,18 +2,32 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.models import User
-from django.contrib.auth.forms import UserCreationForm, UserChangeForm
-from .forms import SignUpForm, UpdateUserForm, ChangePasswordForm, UserInfoForm, ServiceForm, ServiceSlotForm, BookingForm
+from django.contrib.auth.forms import UserCreationForm, UserChangeForm, AuthenticationForm
+from .forms import SignUpForm, UpdateUserForm, ChangePasswordForm, UserInfoForm, ServiceForm, TimeSlotForm, BookingForm, DeleteProfileForm, ChatMessagesForm
 from django import forms
-from .models import Profile, ServiceProvider, SubCategory, Category, City, Service, ServiceSlot, Booking
+from .models import Profile, ServiceProvider, SubCategory, Category, City, Service, TimeSlot, Booking, ChatMessage#, Notification
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.urls import reverse
-from django.http import HttpResponseRedirect
+from django.http import HttpResponse
+import asyncio
+from mailer import connection
+import datetime
+from datetime import date
+from django.views.decorators.http import require_POST
+from django.db.models import OuterRef, Subquery, Q, F, Func, ExpressionWrapper, Value, DateTimeField
+from django.utils.timezone import now
+from django.utils import timezone
+import json
+from django.views.decorators.csrf import csrf_exempt
+from django.db import models
+from django.db.models.functions import Concat
+from django.template.loader import render_to_string
 
 
-# Create your views here.
+# Notification keys
+noti_new_message = "New Message"
 
 
 def home(request):
@@ -27,19 +41,21 @@ def aboutUs(request):
     return render(request, 'iterio_app/aboutUs.html')
 
 def loginPage(request):
-    if request.method == "POST":
-        username = request.POST['username']
-        password = request.POST['password']
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            login(request, user)
-            messages.success(request, 'You are now logged in')
-            return redirect('home')
-        else:
-            messages.success(request, 'Invalid username or password')
-            return redirect('login')
+    if request.method == 'POST':
+        form = AuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+            user = authenticate(request, username=username, password=password)
+            if user is not None:
+                login(request, user)
+                return redirect('home')
+            else:
+                form.add_error(None, 'Invalid username or password')
     else:
-        return render(request, 'iterio_app/loginPage.html')
+        form = AuthenticationForm()
+
+    return render(request, 'iterio_app/loginPage.html', {'form': form})
 
 def logoutUser(request):
     logout(request)
@@ -48,22 +64,34 @@ def logoutUser(request):
 
 
 def registerUser(request):
+    users = User.objects.all()
+    form = SignUpForm(request.POST)
+    all_emails = []
+    context = {'form': form}
+    for user in users:
+        all_emails.append(user.email)
     if request.method == 'POST':
-        form = SignUpForm(request.POST)
-        if form.is_valid():
+        if form.is_valid() and form.cleaned_data['email'] not in all_emails:
             form.save()
             username = form.cleaned_data['username']
             password = form.cleaned_data['password1']
+            user_email = form.cleaned_data['email']
+            asyncio.run(connection.welcome_msg(username, user_email))
             user = authenticate(username=username, password=password)
             login(request, user)
             messages.success(request, ("Username Created - Please Fill Out Your User Info Below..."))
             return redirect('update_user')
         else:
+            email = form.cleaned_data.get('email', "invalid")
+            if not form.cleaned_data['username']:
+                context["invalid_username"] = True
+            if email in all_emails or email == 'invalid':
+                context['invalid_email'] = True
             messages.success(request, ("Please try again..."))
-            return redirect('register')
+            return render(request, 'iterio_app/register.html', context)
     else:
         form = SignUpForm()
-    context = {'form': form}
+    all_emails = []
     return render(request, 'iterio_app/register.html', context)
 
 def profile(request):
@@ -91,7 +119,7 @@ def update_user(request):
                     ServiceProvider.objects.filter(user=current_user).delete()
 
                 login(request, current_user)
-                return redirect('home')
+                return redirect('profile')
         else:
             user_form = UpdateUserForm(instance=current_user)
             user_info_form = UserInfoForm(instance=current_profile)
@@ -121,6 +149,34 @@ def update_password(request):
         else:
             form = ChangePasswordForm(current_user)
             return render(request, 'iterio_app/update_password.html', {'form':form})
+
+@login_required
+def delete_profile(request):
+    user = request.user
+    if request.method == 'POST':
+        form = DeleteProfileForm(request.POST)
+        if form.is_valid():
+            password = form.cleaned_data['password']
+            if user.check_password(password):
+                print("#" * 55)
+                try:
+                    service_provider = ServiceProvider.objects.get(user=user)
+                    services = service_provider.services.all()
+                    for service in services:
+                        print(f"#\tDeleted Service --> {str(service)}")
+                        service.delete()
+                except:
+                    print("#\n#\n#\t---> No Services found To Delete <---\n#\n#")
+                print(f"#\tDELETED PROFILE:\n#\t\t{str(user.username)}")
+                print("#" * 55)
+                user.delete()
+                messages.success(request, 'Your profile has been deleted.')
+                return redirect('home')
+            else:
+                return render(request, 'iterio_app/delete_profile.html', {'form': form, 'Incorrect': True})
+    else:
+        form = DeleteProfileForm()
+    return render(request, 'iterio_app/delete_profile.html', {'form': form})
 
 
 def load_subcategories(request):
@@ -160,9 +216,15 @@ def my_services(request):
     return render(request, 'iterio_app/my_services.html', {'services': services})
 
 
-def service_detail(request, pk):
-    service = get_object_or_404(Service, pk=pk)
-    return render(request, 'iterio_app/service_detail.html', {'service': service})
+def service_detail(request, service_id):
+    service = get_object_or_404(Service, pk=service_id)
+    time_slots = TimeSlot.objects.filter(service=service, is_booked=False)
+
+    context = {
+        'service': service,
+        'time_slots': time_slots,
+    }
+    return render(request, 'iterio_app/service_detail.html', context)
 
 
 def update_service(request, service_id):
@@ -234,7 +296,7 @@ def available_services(request, desired_category, subcategory_id):
         services = services.filter(cities__name__icontains=query).distinct()
 
     # Pagination logic
-    paginator = Paginator(services, 5) # Show 5 services per page
+    paginator = Paginator(services, 3) # Show 3 services per page
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
@@ -246,56 +308,244 @@ def available_services(request, desired_category, subcategory_id):
     }
     return render(request, 'iterio_app/available_services.html', context)
 
+# This is for time slots in calendar view in book_service.html
 def service_slots(request, service_id):
     service = get_object_or_404(Service, id=service_id)
-    slots = ServiceSlot.objects.filter(service=service, is_booked=False).order_by('date', 'start_time')
-    slots_data = [{
-        'id': slot.id,
-        'date': slot.date,
-        'start_time': slot.start_time,
-        'end_time': slot.end_time
-    } for slot in slots]
-    return JsonResponse(slots_data, safe=False)
+    timeslots = TimeSlot.objects.filter(service=service, date__gte=now().date()).order_by('date', 'start_time')
+    events = []
+    for timeslot in timeslots:
+        start_datetime = datetime.datetime.combine(timeslot.date, timeslot.start_time)
+        end_datetime = datetime.datetime.combine(timeslot.date, timeslot.end_time)
+        events.append({
+            "title": f"{ service.name }",
+            "start": start_datetime.isoformat(),
+            "end": end_datetime.isoformat(),
+        })
+    return JsonResponse(events, safe=False)
 
+# This is to create time slots
 @login_required
-def add_service_slot(request, service_id):
+def add_time_slot(request, service_id):
     service = get_object_or_404(Service, id=service_id)
     if request.method == 'POST':
-        form = ServiceSlotForm(request.POST)
+        form = TimeSlotForm(request.POST)
         if form.is_valid():
             slot = form.save(commit=False)
             slot.service = service
             slot.save()
-            return redirect('service_detail', service_id=service.id)  # Redirect to the service detail page or wherever appropriate
+            return redirect('time_slots_created', service_id=service.id)  # Redirect to the time slots created page where user can then update or delete it
     else:
-        form = ServiceSlotForm()
+        form = TimeSlotForm()
 
     context = {
         'service': service,
         'form': form,
     }
-    return render(request, 'iterio_app/add_service_slot.html', context)
+    return render(request, 'iterio_app/add_time_slot.html', context)
 
+# This is for the service provider to be able to view the time slots he/she created
 @login_required
-def book_service(request, service_id):
+def time_slots_created(request, service_id):
     service = get_object_or_404(Service, id=service_id)
-    if request.method == 'POST':
-        form = BookingForm(request.POST)
-        if form.is_valid():
-            booking = form.save(commit=False)
-            booking.user = request.user
-            booking.service_slot.is_booked = True
-            booking.service_slot.save()
-            booking.save()
-            return redirect('booking_success')
-    else:
-        form = BookingForm()
+    timeslots = TimeSlot.objects.filter(service=service, date__gte=timezone.now().date()).order_by('date', 'start_time')
+    today = date.today()
 
     context = {
         'service': service,
+        'timeslots': timeslots,
+        'today': today,
+    }
+    return render(request, 'iterio_app/time_slots_created.html', context)
+
+# This is for the provider to be able to update the time slot
+@login_required
+def update_time_slot(request, timeslot_id):
+    timeslot = get_object_or_404(TimeSlot, id=timeslot_id)
+    if request.method == 'POST':
+        form = TimeSlotForm(request.POST, instance=timeslot)
+        if form.is_valid():
+            form.save()
+            return redirect('time_slots_created', service_id=timeslot.service.id)
+    else:
+        form = TimeSlotForm(instance=timeslot)
+
+    context = {
         'form': form,
+        'timeslot': timeslot
+    }
+    return render(request, 'iterio_app/update_time_slot.html', context)
+
+# This allows the provider to delete a timeslot
+@login_required
+def delete_time_slot(request, timeslot_id):
+    timeslot = get_object_or_404(TimeSlot, id=timeslot_id)
+    service_id = timeslot.service.id
+    timeslot.delete()
+    return redirect('time_slots_created', service_id=service_id)
+
+@login_required
+def book_service_page(request, service_id):
+    service = get_object_or_404(Service, id=service_id)
+    timeslots = TimeSlot.objects.filter(service=service, date__gte=timezone.now().date()).order_by('date', 'start_time')
+    today = date.today()
+    current_datetime = timezone.now()
+
+    context = {
+        'today': today,
+        'service': service,
+        'timeslots': timeslots,
+        'current_datetime': current_datetime,
     }
     return render(request, 'iterio_app/book_service.html', context)
 
-def booking_success(request):
-    return render(request, 'iterio_app/booking_success.html')
+# This is for the user to book the time slot selected
+@require_POST
+@login_required
+def book_time_slot(request, timeslot_id):
+    if request.method == 'POST':
+        timeslot = get_object_or_404(TimeSlot, id=timeslot_id)
+        if not timeslot.is_booked:
+            booking = Booking(user=request.user, timeslot=timeslot)
+            timeslot.is_booked = True
+            timeslot.save()
+            booking.save()
+            return redirect('my_bookings')
+            # return JsonResponse({'status': 'success'}, status=200)
+        else:
+            return JsonResponse({'status': 'error', 'message': 'Time slot already booked'}, status=400)
+    return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
+
+# This allows the users to see the bookings they have made
+@login_required
+def my_bookings(request):
+    current_datetime = timezone.now()
+    user_bookings = Booking.objects.filter(user=request.user)
+
+    # Combine date and start_time into a DateTimeField using Concat
+    upcoming_bookings = user_bookings.annotate(
+        combined_datetime=ExpressionWrapper(
+            Concat(
+                F('timeslot__date'),
+                Value(' '),
+                F('timeslot__start_time'),
+                output_field=DateTimeField()
+            ),
+            output_field=DateTimeField()
+        )
+    ).filter(combined_datetime__gte=current_datetime)
+
+    past_bookings = user_bookings.annotate(
+        combined_datetime=ExpressionWrapper(
+            Concat(
+                F('timeslot__date'),
+                Value(' '),
+                F('timeslot__start_time'),
+                output_field=DateTimeField()
+            ),
+            output_field=DateTimeField()
+        )
+    ).filter(combined_datetime__lt=current_datetime)
+
+    context = {
+        'user_bookings': user_bookings,
+        'upcoming_bookings': upcoming_bookings,
+        'past_bookings': past_bookings,
+    }
+    return render(request, 'iterio_app/my_bookings.html', context)
+
+
+def view_provider_profile(request, provider_id):
+    provider = get_object_or_404(ServiceProvider, id=provider_id)
+    profile = provider.user.profile  # Access the Profile through the User
+    context = {
+        'provider': provider,
+        'profile': profile,
+    }
+    return render(request, 'iterio_app/view_provider_profile.html', context)
+
+@login_required
+def inbox(request):
+    user_id = request.user
+    chat_message = ChatMessage.objects.filter(
+        id__in = Subquery(
+            User.objects.filter(
+                Q(sender__receiver=user_id) |
+                Q(receiver__sender=user_id)
+            ).distinct().annotate(
+                last_msg=Subquery(
+                    ChatMessage.objects.filter(
+                        Q(sender=OuterRef("id"), receiver=user_id) |
+                        Q(receiver=OuterRef("id"), sender=user_id)
+                    ).order_by("-id")[:1].values_list("id", flat=True)
+                )
+            ).values_list("last_msg", flat=True).order_by("-id")
+        )
+    ).order_by("-id")
+
+    context = {
+        'chat_message': chat_message,
+    }
+    return render(request, 'iterio_app/inbox.html', context)
+
+@login_required
+def inbox_detail(request, username):
+    sender = request.user
+    receiver = get_object_or_404(User, username=username)
+
+    if request.method == 'POST':
+        form = ChatMessagesForm(request.POST)
+        if form.is_valid():
+            chat_message = form.save(commit=False)
+            chat_message.sender = sender
+            chat_message.receiver = receiver
+            chat_message.save()
+            return redirect('inbox_detail', username=username)
+    else:
+        form = ChatMessagesForm()
+
+    # Get all unique chat partners
+    open_chats = ChatMessage.objects.filter(
+        Q(sender=sender) | Q(receiver=sender)
+    ).values('sender', 'receiver').distinct()
+
+    # Build a list of unique users
+    chat_partners = []
+    for chat in open_chats:
+        if chat['sender'] == sender.id:
+            chat_partners.append(chat['receiver'])
+        else:
+            chat_partners.append(chat['sender'])
+    chat_partners = User.objects.filter(id__in=chat_partners)
+
+    message_detail = ChatMessage.objects.filter(
+        Q(sender=sender, receiver=receiver) | Q(sender=receiver, receiver=sender)
+    ).order_by("date")
+
+    message_detail.update(is_read=True)
+
+    context = {
+        'message_detail': message_detail,
+        'receiver': receiver,
+        'sender': sender,
+        'chat_partners': chat_partners,
+        'form': form,
+    }
+    return render(request, 'iterio_app/inbox_detail.html', context)
+
+# def send_notification(user=None, sender=None, message=None, notification_type=None):
+#     notification = Notification.objects.create(
+#         user=user,
+#         sender=sender,
+#         notification_type=notification_type,
+#     )
+#     return notification
+
+@login_required
+@require_POST
+def cancel_booking(request, booking_id):
+    booking = get_object_or_404(Booking, id=booking_id, user=request.user)
+    timeslot = booking.timeslot
+    booking.delete()
+    timeslot.is_booked = False
+    timeslot.save()
+    return redirect('my_bookings')

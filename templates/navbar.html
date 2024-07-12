@@ -20,6 +20,9 @@
                 </li>
                 {% if user.is_authenticated %}
                 <li>
+                    <a href="{% url 'inbox' %}" class="text-white hover:text-gray-300">Inbox</a>
+                </li>
+                <li>
                     <a href="{% url 'profile' %}" class="text-white hover:text-gray-300">Profile</a>
                 </li>
                 <li>

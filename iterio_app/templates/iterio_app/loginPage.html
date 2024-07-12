@@ -1,24 +1,41 @@
 {% extends 'main.html' %}
 
+{% load static %}
+{% load static tailwind_tags %}
+{% tailwind_css %}
+
 {% block content %}
-<div class="bg-gray-100 flex items-center justify-center">
+<div class="bg-gray-100 flex items-center justify-center min-h-screen">
     <div class="max-w-md w-full bg-white p-8 rounded-lg shadow-lg">
         <h1 class="text-3xl font-bold text-gray-900 mb-6 text-center">Login</h1>
         <form method="POST" action="{% url 'login' %}" class="space-y-4">
             {% csrf_token %}
             <div>
                 <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
-                <input type="text" name="username" id="username" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                <input type="text" name="username" id="username" 
+                       class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm 
+                              {% if form.username.errors %}border-red-500 focus:outline-red-500{% else %}border-gray-300{% endif %} rounded-md">
+                {% if form.username.errors %}
+                    <p class="text-red-500 text-sm mt-1">{{ form.username.errors.0 }}</p>
+                {% endif %}
             </div>
             <div>
                 <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
-                <input type="password" name="password" id="password" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                <input type="password" name="password" id="password" 
+                       class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm 
+                              {% if form.password.errors %}border-red-500 focus:outline-red-500{% else %}border-gray-300{% endif %} rounded-md">
+                {% if form.password.errors %}
+                    <p class="text-red-500 text-sm mt-1">{{ form.password.errors.0 }}</p>
+                {% endif %}
             </div>
             <button type="submit" class="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-white bg-gray-900 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Login</button>
         </form>
-        {% if error %}
-            <p class="text-red-500 mt-4">{{ error }}</p>
+        {% if form.non_field_errors %}
+            <p class="text-red-500 mt-4 text-center">{{ form.non_field_errors.0 }}</p>
         {% endif %}
+        <div class="mt-4 text-center">
+            <p class="text-sm text-gray-700">Don't have an account? <a href="{% url 'register' %}" class="text-blue-500 hover:text-blue-700">Register here</a></p>
+        </div>
     </div>
 </div>
 {% endblock %}

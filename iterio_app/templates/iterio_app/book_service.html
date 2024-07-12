@@ -10,7 +10,6 @@
     <!-- Tailwind CSS -->
     {% tailwind_css %}
 
-    <!-- Custom Styles -->
     <style>
         html, body {
             height: 100%;
@@ -52,11 +51,31 @@
             max-height: 500px;
             overflow: hidden;
         }
+
+        /* Custom CSS for event hover effect */
+        .fc-event:hover {
+            background-color: #0e3f99; /* Change background color on hover */
+            cursor: pointer; /* Change cursor to pointer on hover */
+        }
+
+        .service-image {
+            width: 40%;
+            height: 40%; /* Adjust this height as needed */
+            object-fit: cover;
+        }
+
+        #tool-btn {
+            margin: 5px 3px;
+        }
     </style>
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- FullCalendar CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.css" />
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
 </head>
 <body class="font-sans text-gray-900 leading-normal antialiased bg-gray-100">
     <!-- Navigation Bar -->
@@ -79,16 +98,64 @@
                 {% endfor %}
             </p>
             <p class="mb-2"><strong>Availability:</strong> {{ service.availability }}</p>
-            <p class="mb-2"><strong>Contact Phone:</strong> {{ service.contact_phone }}</p>
-            <p class="mb-2"><strong>Contact Email:</strong> {{ service.contact_email }}</p>
+            <p class="mb-2"><strong>Contact Information:</strong> {{ service.contact_info }}</p>
             {% if service.picture %}
-                <img class="mt-4 w-full h-48 object-cover" src="{{ service.picture.url }}" alt="{{ service.name }} picture">
+                 <img class="mt-4 service-image" src="{{ service.picture.url }}" alt="{{ service.name }} picture">
             {% endif %}
-        </div>
-
-        <!-- Calendar -->
-        <div class="calendar-container">
-            <div id="calendar" class="calendar"></div>
+            {% for provider in service.providers.all %}
+                <p class="mt-4 mb-4">
+                    <a class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded float-right" id="tool-btn" href="{% url 'service_provider_profile' provider.id %}">
+                    More about {{ provider.user.first_name }}
+                    </a>
+                    <a class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded float-right" id="tool-btn" href="{% url 'inbox_detail' provider.user.username %}">
+                        Message {{ provider.user.first_name }}
+                    </a>
+                </p>
+            {% endfor %}
+            <hr class="my-6">
+    
+            <div class="container mx-auto px-4 py-8">
+                <h1 class="text-3xl font-bold mb-6">Available Time Slots</h1>
+                
+                <table class="min-w-full bg-white shadow-md rounded-lg">
+                    <thead>
+                        <tr>
+                            <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-600">Date</th>
+                            <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-600">Start Time</th>
+                            <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-600">End Time</th>
+                            <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-600">Status</th>
+                            <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-600">Book</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for timeslot in timeslots %}
+                        {% if timeslot.date >= today %}
+                        <tr>
+                            <td class="py-2 px-4">{{ timeslot.date }}</td>
+                            <td class="py-2 px-4">{{ timeslot.start_time }}</td>
+                            <td class="py-2 px-4">{{ timeslot.end_time }}</td>
+                            <td class="py-2 px-4">
+                                {% if timeslot.is_booked %}
+                                    Booked
+                                {% else %}
+                                    Available
+                                {% endif %}
+                            </td>
+                            <td class="py-2 px-4">
+                                {% if not timeslot.is_booked %}
+                                    <form method="post" action="{% url 'book_time_slot' timeslot.id %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="timeslot_id" value="{{ timeslot.id }}">
+                                        <button type="submit" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Book Time Slot</button>
+                                    </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>   
         </div>
     </div>
 
@@ -99,28 +166,5 @@
         </div>
     </footer>
 
-    <!-- FullCalendar JS -->
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid@5.10.1/main.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/interaction@5.10.1/main.min.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            var calendarEl = document.getElementById('calendar');
-            var calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'dayGridMonth',
-                events: {
-                    url: "{% url 'service_slots' service.id %}",
-                    failure: function() {
-                        alert('There was an error while fetching events!');
-                    }
-                },
-                dateClick: function(info) {
-                    alert('Date: ' + info.dateStr);
-                    // Add your booking logic here
-                }
-            });
-            calendar.render();
-        });
-    </script>
 </body>
 </html>

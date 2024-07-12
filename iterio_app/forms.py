@@ -3,7 +3,7 @@ from django.contrib.auth.forms import UserCreationForm, UserChangeForm, SetPassw
 from django import forms
 from django.forms import SelectMultiple
 
-from .models import Profile, City, Service, Category, SubCategory, Booking, ServiceSlot
+from .models import Profile, City, Service, Category, SubCategory, Booking, TimeSlot, ChatMessage
 
 
 class UserInfoForm(forms.ModelForm):
@@ -89,12 +89,12 @@ class ChangePasswordForm(SetPasswordForm):
     def __init__(self, *args, **kwargs):
         super(ChangePasswordForm, self).__init__(*args, **kwargs)
 
-        self.fields['new_password1'].widget.attrs['class'] = 'form-control'
+        self.fields['new_password1'].widget.attrs['class'] = 'form-control block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
         self.fields['new_password1'].widget.attrs['placeholder'] = 'New Password'
         self.fields['new_password1'].label = ''
         self.fields['new_password1'].help_text = '<ul class="form-text text-muted small"><li>Your password can\'t be too similar to your other personal information.</li><li>Your password must contain at least 8 characters.</li><li>Your password can\'t be a commonly used password.</li><li>Your password can\'t be entirely numeric.</li></ul>'
 
-        self.fields['new_password2'].widget.attrs['class'] = 'form-control'
+        self.fields['new_password2'].widget.attrs['class'] = 'form-control block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
         self.fields['new_password2'].widget.attrs['placeholder'] = 'Confirm Password'
         self.fields['new_password2'].label = ''
         self.fields['new_password2'].help_text = '<span class="form-text text-muted"><small>Enter the same password as before, for verification.</small></span>'
@@ -131,19 +131,41 @@ class ServiceForm(forms.ModelForm):
 
 
 class BookingForm(forms.ModelForm):
-    service_slot = forms.ModelChoiceField(queryset=ServiceSlot.objects.filter(is_booked=False))
-
     class Meta:
         model = Booking
-        fields = ['service_slot']
+        fields = ['timeslot']
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['timeslot'].queryset = TimeSlot.objects.filter(booked=False)
 
-class ServiceSlotForm(forms.ModelForm):
+class TimeSlotForm(forms.ModelForm):
     class Meta:
-        model = ServiceSlot
+        model = TimeSlot
         fields = ['date', 'start_time', 'end_time']
         widgets = {
             'date': forms.DateInput(attrs={'type': 'date'}),
             'start_time': forms.TimeInput(attrs={'type': 'time'}),
             'end_time': forms.TimeInput(attrs={'type': 'time'}),
+        }
+
+class DeleteProfileForm(forms.Form):
+    password = forms.CharField(
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-center',
+            'placeholder': 'Enter Your Password'
+        }),
+        label='Password'
+    )
+
+class ChatMessagesForm(forms.ModelForm):
+    class Meta:
+        model = ChatMessage
+        fields = ['message']
+        widgets = {
+            'message': forms.Textarea(attrs={
+                'class': 'form-control block px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm w-full',
+                'placeholder': 'Message...',
+                'rows': 1,
+            }),
         }

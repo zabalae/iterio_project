@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'iterio_app.apps.IterioAppConfig',
     'tailwind',
     'theme',
+    'channels',
 ]
 
 TAILWIND_APP_NAME = 'theme'
@@ -81,7 +82,13 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'iterio_project.wsgi.application'
+ASGI_APPLICATION = 'iterio_project.asgi.application'
 
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer'
+    }
+}
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
@@ -141,3 +148,10 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = '587'
+EMAIL_HOST_USER = 'iterio.supp@gmail.com'
+EMAIL_HOST_PASSWORD = 'nsnx vvfl snyr xwtb'
+EMAIL_USE_TLS = True
+# EMAIL_USE_SSL = False

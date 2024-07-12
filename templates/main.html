@@ -7,17 +7,15 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>Iterio</title>
 
+    <link rel="icon" href="{% static 'images/favicon/favicon-32x32.png' %}" type="image/x-icon">
+
     <!-- Tailwind CSS -->
     {% tailwind_css %}
 
     <!-- Custom Styles -->
     <style>
         /* Custom styles go here */
-        /* Example:
-        body {
-            font-family: 'Poppins', sans-serif;
-        }
-        */
+
         html, body {
             height: 100%;
         }
@@ -25,6 +23,7 @@
         body {
             display: flex;
             flex-direction: column;
+            min-height: 100vh;
         }
 
         .content {
@@ -43,7 +42,7 @@
     {% include 'navbar.html' %}
 
     <!-- Content Section -->
-    <div class="container mx-auto px-4 py-8">
+    <div class="content container mx-auto px-4 py-8">
         {% block content %}
         {% endblock %}
     </div>

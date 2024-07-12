@@ -6,7 +6,7 @@
 
 {% block content %}
 <div class="bg-gray-100 min-h-screen flex items-center justify-center">
-    <div class="max-w-lg w-full bg-white p-8 rounded-lg shadow-lg">
+    <div id="main-content" class="max-w-lg w-full bg-white p-8 rounded-lg shadow-lg relative z-40">
         <h1 class="text-3xl font-bold text-gray-900 mb-6 text-center">Profile</h1>
         <div class="space-y-4">
 
@@ -28,6 +28,9 @@
                 <p class="text-lg font-semibold text-gray-700">Email: <span class="text-gray-900">{{ user.email }}</span></p>
             </div>
             <div>
+                <p class="text-lg font-semibold text-gray-700">Password: <span class="text-gray-900">********</span></p>
+            </div>
+            <div>
                 <p class="text-lg font-semibold text-gray-700">Phone: <span class="text-gray-900">{{ profile.phone }}</span></p>
             </div>
             <div>
@@ -39,34 +42,150 @@
                     <span class="text-gray-900">
                         {% if profile.user_type == 'provider' %}
                             Service Provider
-
-                        <a href="{% url 'my_services' %}" class="block mt-4 py-2 px-4 text-center bg-gray-900 text-white font-semibold rounded-md shadow-sm hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                My Services
-                            </a>
-                        <br>
-
-                        <a href="{% url 'create_service' %}" class="block mt-2 py-2 px-4 text-center bg-gray-900 text-white font-semibold rounded-md shadow-sm hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                Add Service
-                        </a>
-
                         {% else %}
                             Regular User
                         {% endif %}
                     </span>
                 </p>
             </div>
-
         </div>
 
-        <div class="mt-8 space-y-4">
-            <a href="{% url 'update_user' %}" class="block w-full py-2 px-4 text-center bg-gray-900 text-white font-semibold rounded-md shadow-sm hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+        <!-- Options Button -->
+        <div class="mt-8 text-center">
+            <button id="options-button" class="block py-2 px-4 text-center bg-gray-900 text-white font-semibold rounded-md shadow-sm hover:bg-gray-700 focus:outline-none">
+                Options
+            </button>
+        </div>
+
+        <div id="hidden-buttons" class="mt-4 overflow-hidden transition-all duration-300 ease-in-out opacity-0" style="max-height: 0; visibility: hidden;">
+            {% if profile.user_type == 'provider' %}
+                <a href="{% url 'my_services' %}" class="hidden-button block py-2 px-4 text-center bg-gray-900 text-white font-semibold rounded-md shadow-sm hover:bg-gray-700 focus:outline-none">
+                    My Services
+                </a>
+                <br>
+                <a href="{% url 'create_service' %}" class="hidden-button block py-2 px-4 text-center bg-gray-900 text-white font-semibold rounded-md shadow-sm hover:bg-gray-700 focus:outline-none">
+                    Add Service
+                </a>
+            {% endif %}
+            <br>
+            <a href="{% url 'my_bookings' %}" class="hidden-button block w-full py-2 px-4 text-center bg-gray-900 text-white font-semibold rounded-md shadow-sm hover:bg-gray-700 focus:outline-none">
+                My Bookings
+            </a>
+            <br>
+            <a href="{% url 'update_user' %}" class="hidden-button block w-full py-2 px-4 text-center bg-gray-900 text-white font-semibold rounded-md shadow-sm hover:bg-gray-700 focus:outline-none">
                 Update User
             </a>
-            <p class="text-lg font-semibold text-gray-700">Password: <span class="text-gray-900">********</span></p>
-            <a href="{% url 'update_password' %}" class="block w-full py-2 px-4 text-center bg-gray-900 text-white font-semibold rounded-md shadow-sm hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+            <br>
+            <a href="{% url 'update_password' %}" class="hidden-button block w-full py-2 px-4 text-center bg-gray-900 text-white font-semibold rounded-md shadow-sm hover:bg-gray-700 focus:outline-none">
                 Change Password
             </a>
+            <br>
+            <button id="delete-profile-button" class="hidden-button block py-2 px-4 text-center bg-gray-900 text-white font-semibold rounded-md shadow-sm hover:bg-gray-700 focus:outline-none">
+                Delete Profile
+            </button>
+        </div>
+    </div>
+
+    <div id="confirmation-modal" class="fixed top-0 left-0 w-full h-full flex items-center justify-center hidden z-50">
+        <div class="bg-black opacity-50 fixed inset-0 transition-opacity duration-300 pointer-events-none"></div>
+        <div class="bg-white rounded-lg p-8 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 opacity-0 scale-0 transition-opacity duration-300 shadow-lg">
+            <p class="text-lg text-gray-900 mb-4 text-center">Do you want to permanently delete this profile?</p>
+            <div class="flex justify-between">
+                <a href="{% url 'delete_profile' %}" id="delete-button" class="py-2 px-4 bg-red-600 text-white font-semibold rounded-md shadow-sm hover:bg-red-800 focus:outline-none focus:ring-offset-2 focus:ring-red-500">Delete</a>
+                <button id="cancel-button" class="px-4 py-2 bg-gray-300 text-gray-900 rounded-md hover:bg-gray-400 focus:outline-none hover:bg-gray-500">Cancel</button>
+            </div>
         </div>
     </div>
 </div>
+
+<style>
+    #confirmation-modal .bg-black {
+        z-index: -1;
+    }
+    .opacity-50 {
+        opacity: 0.5;
+    }
+
+    .is-visible {
+        opacity: 1;
+        transform: scale(1);
+        transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .is-hidden {
+        opacity: 0;
+        transform: scale(0.8);
+        transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .hidden-buttons {
+    opacity: 0;
+    max-height: 0;
+    visibility: hidden;
+    transition: max-height 0.3s ease, opacity 0.3s ease, visibility 0.3s ease;
+}
+
+    .modal-opened #main-content {
+        opacity: 0.5;
+        transition: opacity 0.3s ease;
+        pointer-events: none;
+    }
+
+    .modal-opened .bg-black {
+        pointer-events: auto;
+    }
+</style>
+
+<script>
+    function toggleDropdown() {
+    var hiddenButtons = document.getElementById('hidden-buttons');
+    var isHidden = hiddenButtons.style.visibility === 'hidden' || hiddenButtons.style.visibility === '';
+
+    if (isHidden) {
+        hiddenButtons.style.visibility = 'visible';
+        hiddenButtons.style.maxHeight = hiddenButtons.scrollHeight + 'px';
+        hiddenButtons.style.opacity = '1';
+    } else {
+        hiddenButtons.style.opacity = '0';
+        hiddenButtons.style.maxHeight = '0';
+        setTimeout(function() {
+            hiddenButtons.style.visibility = 'hidden';
+        }, 300);
+    }
+}
+
+document.getElementById('options-button').addEventListener('click', function() {
+    toggleDropdown();
+});
+
+    document.getElementById('delete-profile-button').addEventListener('click', function() {
+        showConfirmationModal();
+    });
+
+    document.getElementById('cancel-button').addEventListener('click', function() {
+        hideConfirmationModal();
+    });
+
+    function showConfirmationModal() {
+        var modal = document.getElementById('confirmation-modal');
+        modal.classList.remove('hidden');
+        modal.querySelector('.bg-white').classList.remove('scale-0');
+        modal.querySelector('.bg-white').classList.add('is-visible');
+        document.body.classList.add('modal-opened');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function hideConfirmationModal() {
+        var modal = document.getElementById('confirmation-modal');
+        modal.querySelector('.bg-white').classList.remove('is-visible');
+        modal.querySelector('.bg-white').classList.add('is-hidden');
+        setTimeout(function() {
+            modal.classList.add('hidden');
+            modal.querySelector('.bg-white').classList.remove('is-hidden');
+            modal.querySelector('.bg-white').classList.add('scale-0');
+            document.body.classList.remove('modal-opened');
+            document.body.style.overflow = '';
+        }, 300);
+    }
+</script>
 {% endblock %}

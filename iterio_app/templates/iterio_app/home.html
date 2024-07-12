@@ -21,17 +21,24 @@
             <p class="text-gray-600">Discover the wide range of services we offer</p>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <!-- Display All the Category's-->
+            <!-- Display All the Categories-->
             {% for category in categories %}
-            <div class="bg-white rounded-lg shadow-lg p-6 hover:scale-105">
-                <a href="{% url 'subcategory_selection' category.id %}?category={{ category.id }}">
-                    <img src="{{ category.img_path }}" alt="{{ category.name }}" class="w-full h-40 object-cover rounded-lg mb-4">
-                    <h3 class="text-xl font-bold mb-2">{{ category.name }}</h3>
-                    <p class="text-gray-600">{{ category.details }}</p>
-                </a>
+            <div class="group relative flex items-center justify-center overflow-hidden transition-shadow hover:shadow-xl hover:shadow-black/30 rounded-2xl">
+                <div class="h-96 w-full">
+                  <img class="h-full w-full object-cover rounded-2xl transition-transform duration-500 group-hover:rotate-3 group-hover:scale-125" src="{{ category.img_path }}" alt="{{ category.name }}" />
+                </div>
+                <div class="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black group-hover:from-black/70 group-hover:via-black/60 group-hover:to-black/70 rounded-2xl"></div>
+                <div class="absolute inset-0 flex flex-col items-center justify-center px-9 text-center transition-all duration-500 group-hover:translate-y-0 translate-y-[60%] rounded-2xl">
+                  <h1 class="font-dmserif text-3xl font-bold text-white">{{ category.name }}</h1>
+                  <p class="mb-3 text-lg italic text-white opacity-0 transition-opacity duration-300 group-hover:opacity-100">{{ category.details }}</p>
+                  <a href="{% url 'subcategory_selection' category.id %}?category={{ category.id }}">
+                    <button class="cursor-pointer rounded-full bg-neutral-900 py-2 px-3.5 font-com text-sm capitalize text-white shadow shadow-black/60">View All Subcategories</button>
+                  </a>
+                </div>
             </div>
             {% endfor %}
         </div>
     </section>
 </div>
 {% endblock %}
+
